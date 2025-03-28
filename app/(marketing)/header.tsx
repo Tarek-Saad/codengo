@@ -35,8 +35,6 @@ export default function Header() {
             <SignInButton
               mode="modal"
               fallbackRedirectUrl="/learn"
-              afterSignInUrl="/learn"
-              afterSignUpUrl="/learn"
             >
               <Button
                 variant="ghost"

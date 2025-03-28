@@ -33,8 +33,6 @@ export default function Home() {
               <SignUpButton
                 mode="modal"
                 signInFallbackRedirectUrl="/learn"
-                afterSignUpUrl="/learn"
-                afterSignInUrl="/learn"
               >
                 <Button variant="secondary" size="lg" className="w-10/12">
                   Get started
@@ -43,8 +41,6 @@ export default function Home() {
               <SignInButton
               mode="modal"
               fallbackRedirectUrl="/learn"
-              afterSignInUrl="/learn"
-              afterSignUpUrl="/learn"
             >
                 <Button variant="primaryOutline" size="lg" className="w-10/12">
                   Already have an account? Sign in
