@@ -13,6 +13,11 @@ const main = async () => {
     console.log("seeding start");
     await db.delete(schema.courses);
     await db.delete(schema.userProgress);
+    await db.delete(schema.units);
+    await db.delete(schema.lessons);
+    await db.delete(schema.challenges);
+    await db.delete(schema.challengeProgress);
+    await db.delete(schema.quizOptions);
 
     await db.insert(schema.courses).values([
       {
@@ -31,6 +36,32 @@ const main = async () => {
         imageSrc: "/mysql.svg",
       },
     ]);
+
+  // ✅ إضافة وحدة واحدة (Introduction)
+  await db.insert(schema.units).values([
+    { id: 1, title: "Unit 1", description: "Learn the fundamentals of Next.js", courseId: 1, order: 1 },
+    { id: 2, title: "Unit 2", description: "Learn the fundamentals of Next.js", courseId: 1, order: 2 },
+  ]);
+
+  // ✅ إضافة درسين داخل الوحدة
+  await db.insert(schema.lessons).values([
+    { id: 1, title: "What is Next.js?", unitId: 1, order: 1 },
+    { id: 2, title: "How Next.js Works?", unitId: 1, order: 2 },
+  ]);
+
+  // ✅ إضافة تحديين من نوع SELECT فقط
+  await db.insert(schema.challenges).values([
+    { id: 1, lessonId: 1, type: "SELECT", label: "What is Next.js used for?", order: 1 },
+    { id: 2, lessonId: 2, type: "SELECT", label: "What is the main feature of Next.js?", order: 2 },
+  ]);
+
+
+  await db.insert(schema.quizOptions).values([
+    { id: 1, challengeId: 1, text: "Building React applications",imageSrc:'/mascot.svg' ,audioSrc:'/sbah.mp3', correct: true },
+    { id: 2, challengeId: 1, text: "Styling with CSS only",imageSrc:'/mascot.svg',audioSrc:'/sbah.mp3', correct: false },
+    { id: 3, challengeId: 2, text: "Server-side rendering (SSR)",imageSrc:'/mascot.svg' ,audioSrc:'/sbah.mp3', correct: true },
+    { id: 4, challengeId: 2, text: "Using Angular for front-end",imageSrc:'/mascot.svg' ,audioSrc:'/sbah.mp3', correct: false },
+  ]);
 
     console.log("seeding finished");
   } catch (error) {
