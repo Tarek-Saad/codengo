@@ -8,17 +8,17 @@ type Props = {
   onCheck: () => void;
   status: "correct" | "wrong" | "none" | "completed";
   disabled?: boolean;
-  lessonId?: boolean;
+  lessonId?: number;
 };
 
 export const Footer = ({ onCheck, status, disabled, lessonId }: Props) => {
   useKey("Enter", onCheck, {}, [onCheck]);
-  const isMobile = useMedia("(max-width: 1024px)");
+  const isMobile = useMedia("(max-width: 1024px)", false);
 
   return (
     <footer
       className={cn(
-        "lg:h-[140px] h-[100px] mt-12 border-t-2",
+        "lg:h-[140px] h-[100px] mt-[45px] border-t-2",
         status === "correct" && "border-transparent bg-green-100",
         status === "wrong" && "border-transparent bg-rose-100"
       )}
@@ -52,8 +52,8 @@ export const Footer = ({ onCheck, status, disabled, lessonId }: Props) => {
           disabled={disabled}
           className="w-auto"
           onClick={onCheck}
-          size={isMobile ? "sm" : "lg"} // تم تصحيح "1g" إلى "lg"
-          variant={status === "wrong" ? "danger" : "secondary"} // تم تصحيح "7" إلى "?"
+          size={isMobile ? "sm" : "lg"} 
+          variant={status === "wrong" ? "danger" : "secondary"} 
         >
           {status === "none" && "Check"}
           {status === "correct" && "Next"}

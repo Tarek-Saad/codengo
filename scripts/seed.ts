@@ -52,6 +52,7 @@ const main = async () => {
   // ✅ إضافة تحديين من نوع SELECT فقط
   await db.insert(schema.challenges).values([
     { id: 1, lessonId: 1, type: "SELECT", label: "What is Next.js used for?", order: 1 },
+    { id: 3, lessonId: 1, type: "SELECT", label: "What is nodeJs used in web ?", order: 2 },
     { id: 2, lessonId: 2, type: "SELECT", label: "What is the main feature of Next.js?", order: 2 },
   ]);
 
@@ -59,6 +60,8 @@ const main = async () => {
   await db.insert(schema.quizOptions).values([
     { id: 1, challengeId: 1, text: "Building React applications",imageSrc:'/mascot.svg' ,audioSrc:'/sbah.mp3', correct: true },
     { id: 2, challengeId: 1, text: "Styling with CSS only",imageSrc:'/mascot.svg',audioSrc:'/sbah.mp3', correct: false },
+    { id: 5, challengeId: 3, text: "Building React applications",imageSrc:'/mascot.svg' ,audioSrc:'/sbah.mp3', correct: true },
+    { id: 6, challengeId: 3, text: "Styling with CSS only",imageSrc:'/mascot.svg',audioSrc:'/sbah.mp3', correct: false },
     { id: 3, challengeId: 2, text: "Server-side rendering (SSR)",imageSrc:'/mascot.svg' ,audioSrc:'/sbah.mp3', correct: true },
     { id: 4, challengeId: 2, text: "Using Angular for front-end",imageSrc:'/mascot.svg' ,audioSrc:'/sbah.mp3', correct: false },
   ]);
