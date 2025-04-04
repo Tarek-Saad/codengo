@@ -1,5 +1,9 @@
+import { useCallback } from "react";
+import { useAudio, useKey } from "react-use";
 import { challenges } from "@/db/schema";
 import { cn } from "@/lib/utils";
+
+
 
 import Image from "next/image";
 
@@ -28,9 +32,22 @@ export const Card = ({
   status = "none",
   type,
 }: Props) => {
+
+    const [audio, _, controls] = useAudio({ src: audioSrc || "" });
+
+    const handleClick = useCallback(() => {
+        if (disabled) return;   // إذا كان العنصر معطلاً، لا يتم تنفيذ أي شيء
+        controls.play();         // تشغيل الصوت باستخدام `controls`
+        onClick();               // استدعاء الدالة `onClick` الممررة
+      }, [disabled, onClick, controls]);  // الاعتماد على `disabled`, `onClick`, و `controls` لإعادة تعريف الدالة عند التغيير
+      
+      useKey(shortcut, handleClick, {}, [handleClick]);
+      
+
+
   return (
     <div
-      onClick={() => {}}
+      onClick={handleClick}
       className={cn(
         "h-full border-2 rounded-xl border-b-4 hover:bg-black/5 p-4 lg:p-6 cursor-pointer active:border-b-2",
         selected && "border-sky-300 bg-sky-100 hover:bg-sky-100",
@@ -45,6 +62,7 @@ export const Card = ({
         type === "SELECT" && "lg:p-3 w-full"
       )}
     >
+        {audio}
       {imageSrc && (
         <div className="relative aspect-square mb-4 max-h-[80px] lg:max-h-[150px] w-full">
           <Image src={imageSrc} fill alt={text} />

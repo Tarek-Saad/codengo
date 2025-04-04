@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Header } from "./header";
 import { QuestionBubble } from "./question-bubble";
 import { MultiChoices } from "./multible-choice";
+import { Footer } from "./footer";
 
 type Props = {
   initialPercentage: number;
@@ -37,7 +38,14 @@ export const Challenge = ({
 
   const challenge = challenges[activeIndex];
 
-  const options = challenge?.quizOptions ?? []; // Use optional chaining to avoid errors if challenge is undefined
+  const [selectedOption, setSelectedOption] = useState<number | undefined>();
+  const [status, setStatus] = useState<"correct" | "wrong" | "none">("none");
+  const options = challenge?.quizOptions ?? [];
+
+  const onSelect = (id: number) => {
+    if (status !== "none") return; // إذا كانت الحالة ليست "none"، لا تنفذ الكود التالي
+    setSelectedOption(id); // تعيين الـ id المحدد
+  };
 
   // تحديد عنوان التحدي بناءً على نوعه
   let title: string;
@@ -71,7 +79,7 @@ export const Challenge = ({
 
       <div className="flex-1">
         <div className="h-full flex items-center justify-center">
-          <div className="lg:min-h-[400px] lg:w-[950px] w-full px-6 lg:px-0 flex flex-col gap-y-12">
+          <div className="lg:min-h-[400px] lg:w-[1000px] w-full px-6 lg:px-0 flex flex-col gap-y-12">
             <h1 className="text-md lg:text-xl text-center lg:text-start font-bold text-neutral-700">
               {title}
             </h1>
@@ -81,11 +89,16 @@ export const Challenge = ({
                   <QuestionBubble question={challenge.label} />
                   <MultiChoices
                     options={options}
-                    onSelect={() => {}}
-                    status="none" // TODO: Set the correct status
-                    selectedOption={undefined}
+                    onSelect={onSelect}
+                    status={status} // TODO: Set the correct status
+                    selectedOption={selectedOption}
                     disabled={false}
                     type={challenge.type}
+                  />
+                  <Footer
+                    disabled={!selectedOption}
+                    status={status}
+                    onCheck={() => {}}
                   />
                 </>
               )}
