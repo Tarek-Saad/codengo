@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ExitModal } from "@/components/modals/exit.modal";
+import { HeartsModal } from "@/components/modals/hearts-modal";
 
 const font = Nunito({
   subsets: ["latin"],
@@ -25,6 +26,7 @@ export default function RootLayout({
           className={font.className}
         >
           <ExitModal />
+          <HeartsModal />
           {children}
         </body>
       </html>

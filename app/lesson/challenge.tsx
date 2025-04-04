@@ -34,6 +34,9 @@ export const Challenge = ({
   initialLessonChallenges,
   userSubscription,
 }: Props) => {
+
+  const { open: openHeartsModal } = useHeartsModal();
+
   const { width, height } = useWindowSize();
   const router = useRouter();
 
@@ -109,7 +112,7 @@ export const Challenge = ({
         upsertChallengeProgress(challenge.id)
           .then((response) => {
             if (response?.error === "hearts") {
-              console.error("Missing hearts");
+              openHeartsModal();
               return;
             }
 
@@ -133,7 +136,7 @@ export const Challenge = ({
         reduceHearts(challenge.id)
           .then((response) => {
             if (response?.error === "hearts") {
-              console.error("Missing hearts");
+              openHeartsModal();
               return;
             }
 
