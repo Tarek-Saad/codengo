@@ -11,9 +11,11 @@ import { MultiChoices } from "./multible-choice";
 import { Footer } from "./footer";
 import { upsertChallengeProgress } from "@/actions/challenge-progress";
 import { reduceHearts } from "@/actions/user-progress";
-import { useAudio, useWindowSize } from "react-use";
+import { useAudio, useWindowSize, useMount } from "react-use";
 import { ResultCard } from "./result-card";
 import { useRouter } from "next/navigation";
+import { useHeartsModal } from "@/store/use-hearts-modal";
+import { usePracticeModal } from "@/store/use-practice-modal";
 
 type Props = {
   initialPercentage: number;
@@ -34,8 +36,14 @@ export const Challenge = ({
   initialLessonChallenges,
   userSubscription,
 }: Props) => {
-
   const { open: openHeartsModal } = useHeartsModal();
+  const { open: openPracticeModal } = usePracticeModal();
+
+  useMount(() => {
+    if (initialPercentage === 100) {
+      openPracticeModal();
+    }
+  });
 
   const { width, height } = useWindowSize();
   const router = useRouter();
@@ -56,7 +64,9 @@ export const Challenge = ({
   const [lessonId, setLessonId] = useState(initialLessonId);
 
   const [hearts, setHearts] = useState(initialHearts);
-  const [percentage, setPercentage] = useState(initialPercentage);
+  const [percentage, setPercentage] = useState(() => {
+    return initialPercentage === 100 ? 0 : initialPercentage;
+  });
 
   const [challenges] = useState(initialLessonChallenges);
   const [activeIndex, setActiveIndex] = useState(() => {
@@ -157,7 +167,7 @@ export const Challenge = ({
   if (!challenge) {
     return (
       <>
-      {finishAudio}
+        {finishAudio}
         <Confetti
           width={width}
           height={height}
