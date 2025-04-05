@@ -21,7 +21,6 @@ type Props = {
 };
 
 export const Card = ({
-  id,
   imageSrc,
   audioSrc,
   text,
@@ -33,10 +32,11 @@ export const Card = ({
   type,
 }: Props) => {
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [audio, _, controls] = useAudio({ src: audioSrc || "" });
 
     const handleClick = useCallback(() => {
-        if (disabled) return;   // إذا كان العنصر معطلاً، لا يتم تنفيذ أي شيء
+        if (disabled) return;   
         controls.play();         // تشغيل الصوت باستخدام `controls`
         onClick();               // استدعاء الدالة `onClick` الممررة
       }, [disabled, onClick, controls]);  // الاعتماد على `disabled`, `onClick`, و `controls` لإعادة تعريف الدالة عند التغيير

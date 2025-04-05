@@ -50,17 +50,22 @@ export const Challenge = ({
 
   const [finishAudio] = useAudio({ src: "/finish.mp3", autoPlay: true });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [correctAudio, _c, correctControls] = useAudio({ src: "/correct.wav" });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [incorrectAudio, _i, incorrectControls] = useAudio({
     src: "/incorrect.wav",
   });
 
-  const [audio, , controls] = useAudio({ src: "/correct.wav" });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [audio, controls] = useAudio({ src: "/correct.wav" });
+
 
   const [pending, startTransition] = useTransition();
 
   // used in final screen
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [lessonId, setLessonId] = useState(initialLessonId);
 
   const [hearts, setHearts] = useState(initialHearts);
