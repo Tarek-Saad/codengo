@@ -16,6 +16,7 @@ import { ResultCard } from "./result-card";
 import { useRouter } from "next/navigation";
 import { useHeartsModal } from "@/store/use-hearts-modal";
 import { usePracticeModal } from "@/store/use-practice-modal";
+import { TextChallenge } from "./text-challenge";
 
 type Props = {
   initialPercentage: number;
@@ -83,6 +84,24 @@ export const Challenge = ({
 
   const challenge = challenges[activeIndex];
   console.log(challenges);
+
+  const handleTextComplete = () => {
+    startTransition(() => {
+      upsertChallengeProgress(challenge.id)
+        .then((response) => {
+          if (response?.error === "hearts") {
+            openHeartsModal();
+            return;
+          }
+          correctControls.play();
+          setPercentage((prev) => prev + 100 / challenges.length);
+          onNext();
+        })
+        .catch(() => {
+          toast.error("Something went wrong!");
+        });
+    });
+  };
 
   // Quiz functionalities
   const [selectedOption, setSelectedOption] = useState<number | undefined>();
@@ -168,6 +187,25 @@ export const Challenge = ({
       });
     }
   };
+
+  // Render text challenge if type is TEXT
+  if (challenge && challenge.type === "TEXT" && challenge.textContent) {
+    return (
+      <div className="h-full">
+        <Header
+          hearts={hearts}
+          percentage={percentage}
+          hasActiveSubscription={!!userSubscription}
+        />
+        <div className="flex-1 h-full">
+          <TextChallenge
+            content={challenge.textContent}
+            onComplete={handleTextComplete}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (!challenge) {
     return (

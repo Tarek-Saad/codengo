@@ -55,6 +55,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     label: text("label").notNull(),
     order: integer("order").notNull(),
     explanation: text("explanation"),
+    textContent: text("text_content"),
   });
   
   export const challengesRelations = relations(challenges, ({ one , many }) => ({
