@@ -2,7 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
-import Confetti from "react-confetti";
+import dynamic from 'next/dynamic';
+
+const Confetti = dynamic(() => import('react-confetti'), {
+  ssr: false
+});
 import { quizOptions, challenges } from "@/db/schema";
 import { toast } from "sonner";
 import { Header } from "./header";
@@ -17,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useHeartsModal } from "@/store/use-hearts-modal";
 import { usePracticeModal } from "@/store/use-practice-modal";
 import { TextChallenge } from "./text-challenge";
+import { ImageChallenge } from "./image-challenge";
 
 type Props = {
   initialPercentage: number;
@@ -188,6 +193,25 @@ export const Challenge = ({
     }
   };
 
+  // Render image challenge if type is IMAGE
+  if (challenge && challenge.type === "IMAGE" && challenge.imageContent) {
+    return (
+      <div className="h-full">
+        <Header
+          hearts={hearts}
+          percentage={percentage}
+          hasActiveSubscription={!!userSubscription}
+        />
+        <div className="flex-1 h-full">
+          <ImageChallenge
+            content={challenge.imageContent}
+            onComplete={handleTextComplete}
+          />
+        </div>
+      </div>
+    );
+  }
+
   // Render text challenge if type is TEXT
   if (challenge && challenge.type === "TEXT" && challenge.textContent) {
     return (
@@ -211,13 +235,15 @@ export const Challenge = ({
     return (
       <>
         {finishAudio}
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={500}
-          tweenDuration={10000}
-        />
+        {typeof window !== 'undefined' && (
+          <Confetti
+            width={width}
+            height={height}
+            recycle={false}
+            numberOfPieces={500}
+            tweenDuration={10000}
+          />
+        )}
 
         <div className="flex flex-col gap-y-4 lg:gap-y-8 max-w-lg mx-auto text-center items-center justify-center h-full">
           <Image

@@ -1,8 +1,6 @@
 import { getLesson, getUserProgress } from "@/db/queries";
 import { redirect } from "next/navigation";
 import { Challenge } from "./challenge";
-import { toast } from "sonner";
-
 const LessonPage = async () => {
   const lessonData = getLesson();
   const userProgressData = getUserProgress();
@@ -13,7 +11,6 @@ const LessonPage = async () => {
   ]);
 
   if (!lesson || !userProgress) {
-    toast.error("Lesson not found or user progress unavailable.");
     redirect("/learn");
   }
 
