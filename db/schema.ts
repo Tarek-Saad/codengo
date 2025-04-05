@@ -53,6 +53,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     type: challengesEnum("type").notNull(),
     label: text("label").notNull(),
     order: integer("order").notNull(),
+    explanation: text("explanation"),
   });
   
   export const challengesRelations = relations(challenges, ({ one , many }) => ({
