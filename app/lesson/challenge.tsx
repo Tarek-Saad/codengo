@@ -23,7 +23,6 @@ import { usePracticeModal } from "@/store/use-practice-modal";
 import { TextChallenge } from "./text-challenge";
 import { ImageChallenge } from "./image-challenge";
 import { VideoChallenge } from "./video-challenge";
-import { PDFChallenge } from "./pdf-challenge";
 
 type Props = {
   initialPercentage: number;
@@ -243,10 +242,10 @@ export const Challenge = ({
           hasActiveSubscription={!!userSubscription}
         />
         <div className="flex-1 h-full">
-          <PDFChallenge
+          {/* <PDFChallenge
             content={challenge.pdfURL}
             onComplete={handleTextComplete}
-          />
+          /> */}
         </div>
       </div>
     );
