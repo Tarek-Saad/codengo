@@ -33,11 +33,13 @@ export const Footer = ({ onCheck, status, disabled, lessonId, explanation }: Pro
                 <CheckCircle className="h-6 w-6 lg:h-10 lg:w-10 mr-4" />
                 Nicely done!
               </div>
+
               {explanation && (
                 <div className="text-gray-600 text-xs sm:text-sm lg:text-base p-4 sm:p-2 font-bold leading-relaxed text-justify text-green-800 fixed lg:relative bottom-0 left-0 w-full bg-green-100 lg:bg-transparent lg:w-auto">
                   {explanation}
                 </div>
               )}
+
             </div>
           )}
           {status === "wrong" && (
