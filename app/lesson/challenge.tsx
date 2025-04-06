@@ -22,6 +22,8 @@ import { useHeartsModal } from "@/store/use-hearts-modal";
 import { usePracticeModal } from "@/store/use-practice-modal";
 import { TextChallenge } from "./text-challenge";
 import { ImageChallenge } from "./image-challenge";
+import { VideoChallenge } from "./video-challenge";
+import { PDFChallenge } from "./pdf-challenge";
 
 type Props = {
   initialPercentage: number;
@@ -205,6 +207,44 @@ export const Challenge = ({
         <div className="flex-1 h-full">
           <ImageChallenge
             content={challenge.imageContent}
+            onComplete={handleTextComplete}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Render video challenge if type is VIDEO
+  if (challenge && challenge.type === "VIDEO" && challenge.videoURL) {
+    return (
+      <div className="h-full">
+        <Header
+          hearts={hearts}
+          percentage={percentage}
+          hasActiveSubscription={!!userSubscription}
+        />
+        <div className="flex-1 h-full">
+          <VideoChallenge
+            content={challenge.videoURL}
+            onComplete={handleTextComplete}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Render PDF challenge if type is PDF
+  if (challenge && challenge.type === "PDF" && challenge.pdfURL) {
+    return (
+      <div className="h-full">
+        <Header
+          hearts={hearts}
+          percentage={percentage}
+          hasActiveSubscription={!!userSubscription}
+        />
+        <div className="flex-1 h-full">
+          <PDFChallenge
+            content={challenge.pdfURL}
             onComplete={handleTextComplete}
           />
         </div>
