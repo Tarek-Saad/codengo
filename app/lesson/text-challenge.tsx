@@ -1,8 +1,26 @@
 "use client";
 
 import ReactMarkdown from 'react-markdown';
+import localFont from 'next/font/local';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
+import { cn } from '@/lib/utils';
+
+// Load Arabic fonts
+const notoKufiArabic = localFont({
+  src: [{
+    path: '../../public/fonts/NotoKufiArabic-Regular.ttf',
+    weight: '400',
+    style: 'normal',
+  }],
+  variable: '--font-arabic'
+});
+
+// Function to detect if text contains Arabic
+const containsArabic = (text: string) => {
+  const arabicPattern = /[؀-ۿ]/;
+  return arabicPattern.test(text);
+};
 
 interface TextChallengeProps {
   content: string;
@@ -11,7 +29,7 @@ interface TextChallengeProps {
 
 export const TextChallenge = ({ content, onComplete }: TextChallengeProps) => {
   return (
-    <div className="w-full max-w-4xl mx-auto p-8">
+    <div className={`w-full max-w-4xl mx-auto p-8 ${notoKufiArabic.variable}`}>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Reading section */}
         <div className="p-8">
@@ -21,62 +39,175 @@ export const TextChallenge = ({ content, onComplete }: TextChallengeProps) => {
             <div className="h-1.5 w-16 bg-green-300 rounded-full absolute bottom-0 left-36"></div>
           </div>
           
-          <div className="prose prose-lg max-w-none
-            prose-headings:text-gray-800
-            prose-h1:text-5xl prose-h1:font-black prose-h1:mb-8 prose-h1:leading-tight
-            prose-h1:bg-gradient-to-r prose-h1:from-green-800 prose-h1:to-green-600
-            prose-h1:bg-clip-text prose-h1:text-transparent prose-h1:py-2
-            prose-h2:text-4xl prose-h2:font-extrabold prose-h2:mb-8 prose-h2:text-green-700
-            prose-h2:border-b-4 prose-h2:border-green-200 prose-h2:pb-3 prose-h2:relative
-            prose-h2:after:content-[''] prose-h2:after:absolute prose-h2:after:bottom-0 prose-h2:after:left-0
-            prose-h2:after:w-1/3 prose-h2:after:h-1 prose-h2:after:bg-green-500
-            prose-h2:uppercase prose-h2:tracking-wide prose-h2:shadow-sm
-            prose-h3:text-2xl prose-h3:font-extrabold prose-h3:text-white
-            prose-h3:bg-gradient-to-r prose-h3:from-green-700 prose-h3:to-green-500
-            prose-h3:px-6 prose-h3:py-3 prose-h3:rounded-lg prose-h3:shadow-lg
-            prose-h3:mb-6 prose-h3:inline-block prose-h3:w-auto
-            prose-h3:border-l-8 prose-h3:border-green-800
-            prose-h3:text-shadow
-            prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
-            prose-strong:text-green-900 prose-strong:font-bold
-            prose-em:text-gray-800 prose-em:italic
-            prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4
-            prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4
-            prose-li:text-gray-700 prose-li:mb-2
-            prose-blockquote:border-l-4 prose-blockquote:border-green-500
-            prose-blockquote:pl-4 prose-blockquote:py-1 prose-blockquote:my-4
-            prose-blockquote:bg-green-50 prose-blockquote:rounded-r-lg
-            prose-a:text-green-600 prose-a:hover:text-green-700 prose-a:underline
-            prose-code:bg-gray-100 prose-code:text-green-800 prose-code:px-1 prose-code:rounded
-            ">
+          <div className={cn(
+            'prose prose-lg max-w-none',
+            'prose-headings:text-gray-800',
+            'prose-h1:text-5xl prose-h1:font-black prose-h1:mb-8 prose-h1:leading-tight',
+            'prose-h1:bg-gradient-to-r prose-h1:from-green-800 prose-h1:to-green-600',
+            'prose-h1:bg-clip-text prose-h1:text-transparent prose-h1:py-2',
+            'prose-h2:text-4xl prose-h2:font-extrabold prose-h2:my-8 prose-h2:text-green-700',
+            'prose-h2:border-b-4 prose-h2:border-green-200 prose-h2:pb-3 prose-h2:relative',
+            'prose-h2:after:content-[""] prose-h2:after:absolute prose-h2:after:bottom-0 prose-h2:after:left-0',
+            'prose-h2:after:w-1/3 prose-h2:after:h-1 prose-h2:after:bg-green-500',
+            'prose-h2:uppercase prose-h2:tracking-wide prose-h2:shadow-sm',
+            'prose-h3:text-2xl prose-h3:font-extrabold prose-h3:text-white',
+            'prose-h3:bg-gradient-to-r prose-h3:from-green-700 prose-h3:to-green-500',
+            'prose-h3:px-6 prose-h3:py-3 prose-h3:rounded-lg prose-h3:shadow-lg',
+            'prose-h3:mb-6 prose-h3:inline-block prose-h3:w-auto',
+            'prose-h3:border-l-8 prose-h3:border-green-800',
+            'prose-h3:text-shadow',
+            'prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4',
+            'prose-strong:text-green-900 prose-strong:font-bold',
+            'prose-em:text-gray-800 prose-em:italic',
+            'prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4',
+            'prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4',
+            'prose-li:text-gray-700 prose-li:mb-2',
+            'prose-blockquote:border-l-4 prose-blockquote:border-green-500',
+            'prose-blockquote:pl-4 prose-blockquote:py-1 prose-blockquote:my-4',
+            'prose-blockquote:bg-green-50 prose-blockquote:rounded-r-lg',
+            'prose-a:text-green-600 prose-a:hover:text-green-700 prose-a:underline',
+            'prose-code:bg-gray-100 prose-code:text-green-800 prose-code:px-1 prose-code:rounded',
+            containsArabic(content) && 'font-arabic text-right rtl leading-loose tracking-normal'
+          )}>
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeHighlight]}
               components={{
-                h1: ({...props}) => <h1 className="animate-fade-in animate-slide-in" {...props} />,
-                h2: ({...props}) => <h2 className="animate-fade-in animate-slide-in delay-100 transform hover:translate-x-2 transition-transform duration-300" {...props} />,
-                h3: ({...props}) => <h3 className="animate-fade-in animate-slide-in delay-150 transform hover:-translate-y-1 hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-green-700 to-green-500 text-white px-6 py-3 rounded-lg shadow-lg inline-block border-l-8 border-green-800 my-5 [text-shadow:_0_1px_0_rgb(0_0_0_/_40%)]" {...props} />,
+                p: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <p className={cn(
+                      isArabic && 'arabic-text',
+                      'transition-all duration-200'
+                    )} {...props}>
+                      {children}
+                    </p>
+                  );
+                },
+                h1: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <h1 className={cn(
+                      'animate-fade-in animate-slide-in',
+                      isArabic && 'arabic-heading'
+                    )} {...props}>
+                      {children}
+                    </h1>
+                  );
+                },
+                h2: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <h2 className={cn(
+                      'animate-fade-in animate-slide-in delay-100',
+                      'transform hover:translate-x-2 transition-transform duration-300',
+                      isArabic && 'arabic-heading'
+                    )} {...props}>
+                      {children}
+                    </h2>
+                  );
+                },
+                h3: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <h3 className={cn(
+                      'animate-fade-in animate-slide-in delay-150',
+                      'transform hover:-translate-y-1 hover:shadow-xl transition-all duration-300',
+                      'bg-gradient-to-r from-green-700 to-green-500 text-white px-6 py-3',
+                      'rounded-lg shadow-lg inline-block my-5',
+                      isArabic ? 'border-r-8 border-green-800' : 'border-l-8 border-green-800',
+                      '[text-shadow:_0_1px_0_rgb(0_0_0_/_40%)]',
+                      isArabic && 'arabic-heading'
+                    )} {...props}>
+                      {children}
+                    </h3>
+                  );
+                },
                 h4: ({...props}) => <h4 className="text-2xl font-semibold text-green-700 mb-4" {...props} />,
                 h5: ({...props}) => <h5 className="text-xl font-semibold text-green-600 mb-3" {...props} />,
                 h6: ({...props}) => <h6 className="text-lg font-semibold text-green-500 mb-2" {...props} />,
-                strong: ({...props}) => (
-                  <strong className="bg-gradient-to-r from-green-900 to-green-700 bg-clip-text text-transparent hover:scale-105 transition-transform" {...props} />
-                ),
-                blockquote: ({...props}) => (
-                  <blockquote className="border-l-4 border-green-500 pl-4 py-2 my-4 bg-green-50 rounded-r-lg shadow-sm hover:shadow-md transition-shadow animate-fade-in" {...props} />
-                ),
+                strong: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <strong 
+                      className={cn(
+                        'px-3 py-1.5 rounded-md leading-relaxed',
+                        'bg-gradient-to-r from-green-100 to-green-50',
+                        'border border-green-200 shadow-sm',
+                        isArabic
+                          ? 'arabic-text font-bold text-green-800 block my-6'
+                          : 'font-bold text-green-800 inline-block mx-1',
+                        'hover:scale-105 hover:shadow-md transition-all duration-200'
+                      )} 
+                      {...props}>
+                      {children}
+                    </strong>
+                  );
+                },
+                blockquote: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <blockquote 
+                      className={cn(
+                        'py-2 my-4 bg-green-50 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-fade-in',
+                        isArabic ? 'border-r-4 pr-4 text-right' : 'border-l-4 pl-4',
+                        'border-green-500',
+                        isArabic && 'arabic-text'
+                      )} 
+                      {...props}
+                    >
+                      {children}
+                    </blockquote>
+                  );
+                },
                 a: ({...props}) => (
                   <a className="text-green-600 hover:text-green-700 underline transition-all duration-200 hover:scale-105" {...props} />
                 ),
-                ul: ({...props}) => (
-                  <ul className="list-disc pl-6 space-y-2 animate-fade-in delay-200" {...props} />
-                ),
-                ol: ({...props}) => (
-                  <ol className="list-decimal pl-6 space-y-2 animate-fade-in delay-200" {...props} />
-                ),
-                li: ({...props}) => (
-                  <li className="text-gray-700 leading-relaxed hover:translate-x-1 transition-transform" {...props} />
-                ),
+                ul: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <ul 
+                      className={cn(
+                        'space-y-2 animate-fade-in delay-200',
+                        isArabic ? 'pr-6 list-disc-rtl' : 'pl-6 list-disc',
+                        isArabic && 'arabic-text'
+                      )} 
+                      {...props}
+                    >
+                      {children}
+                    </ul>
+                  );
+                },
+                ol: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <ol 
+                      className={cn(
+                        'space-y-2 animate-fade-in delay-200',
+                        isArabic ? 'pr-6 list-decimal-rtl' : 'pl-6 list-decimal',
+                        isArabic && 'arabic-text'
+                      )} 
+                      {...props}
+                    >
+                      {children}
+                    </ol>
+                  );
+                },
+                li: ({children, ...props}) => {
+                  const isArabic = containsArabic(children?.toString() || '');
+                  return (
+                    <li 
+                      className={cn(
+                        'text-gray-700 leading-relaxed transition-transform',
+                        isArabic ? 'hover:-translate-x-1' : 'hover:translate-x-1',
+                        isArabic && 'arabic-text'
+                      )} 
+                      {...props}
+                    >
+                      {children}
+                    </li>
+                  );
+                },
               }}
             >
               {content}

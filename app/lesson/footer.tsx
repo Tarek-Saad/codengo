@@ -12,6 +12,7 @@ type Props = {
   explanation?: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Footer = ({ onCheck, status, disabled, lessonId, explanation }: Props) => {
   useKey("Enter", onCheck, {}, [onCheck]);
   const isMobile = useMedia("(max-width: 1024px)", false);
@@ -19,7 +20,7 @@ export const Footer = ({ onCheck, status, disabled, lessonId, explanation }: Pro
   return (
     <footer
       className={cn(
-        "lg:h-[140px] h-[100px] mt-[45px] border-t-2",
+        "lg:h-[140px] relative h-[100px] mt-[45px] border-t-2",
         status === "correct" && "border-transparent bg-green-100",
         status === "wrong" && "border-transparent bg-rose-100"
       )}
@@ -32,11 +33,11 @@ export const Footer = ({ onCheck, status, disabled, lessonId, explanation }: Pro
                 <CheckCircle className="h-6 w-6 lg:h-10 lg:w-10 mr-4" />
                 Nicely done!
               </div>
-              {/* {explanation && (
-                // <div className="text-gray-600 text-sm lg:text-base p-2 font-light leading-relaxed text-justify text-green-800 font-family: 'Poppins', sans-serif">
-                //   {explanation}
-                // </div>
-              )} */}
+              {explanation && (
+                <div className="text-gray-600 text-xs sm:text-sm lg:text-base p-4 sm:p-2 font-bold leading-relaxed text-justify text-green-800 fixed lg:relative bottom-0 left-0 w-full bg-green-100 lg:bg-transparent lg:w-auto">
+                  {explanation}
+                </div>
+              )}
             </div>
           )}
           {status === "wrong" && (
@@ -49,7 +50,7 @@ export const Footer = ({ onCheck, status, disabled, lessonId, explanation }: Pro
             <Button
               variant="default"
               size={isMobile ? "sm" : "lg"} 
-              onClick={() => (window.location.href = `/lesson/${lessonId}`)} 
+              onClick={() => { window.location.href = `/lesson/${lessonId}`; }}
             >
               Practice again
             </Button>
