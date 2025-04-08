@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig = {
+  reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['*']
+    },
+  },
   typescript: {
     // ✅ Ignore type errors during builds
     ignoreBuildErrors: true,
@@ -36,4 +42,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default nextConfig satisfies NextConfig;
