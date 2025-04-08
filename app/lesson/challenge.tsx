@@ -24,6 +24,7 @@ import { TextChallenge } from "./text-challenge";
 import { ImageChallenge } from "./image-challenge";
 import { VideoChallenge } from "./video-challenge";
 import { PdfChallenge } from "./pdf-challenge";
+import { CodeChallenge } from "./code-challenge";
 
 type Props = {
   initialPercentage: number;
@@ -246,6 +247,42 @@ export const Challenge = ({
         <div className="flex-1 h-full">
           <PdfChallenge
             pdfUrl={challenge.pdfURL}
+            onComplete={handleTextComplete}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Render code challenge if type is CODE
+  if (challenge && challenge.type === "CODE" && challenge.initialCode) {
+    let testCases;
+    try {
+      testCases = JSON.parse(challenge.testCases || '[]');
+      if (!Array.isArray(testCases)) testCases = [];
+      // Ensure each test case has the required structure
+      testCases = testCases.map(test => ({
+        input: String(test.input || ''),
+        expectedOutput: String(test.expectedOutput || ''),
+        isHidden: Boolean(test.isHidden)
+      }));
+    } catch (error) {
+      console.error('Error parsing test cases:', error);
+      testCases = [];
+    }
+    return (
+      <div className="h-full">
+        <Header
+          hearts={hearts}
+          percentage={percentage}
+          hasActiveSubscription={!!userSubscription}
+        />
+        <div className="flex-1 h-full">
+          <CodeChallenge
+            initialCode={challenge.initialCode}
+            language={challenge.language as "python" | "javascript" | "typescript"}
+            instructions={challenge.instructions || ''}
+            testCases={testCases}
             onComplete={handleTextComplete}
           />
         </div>

@@ -59,6 +59,13 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     imageContent: text("image_content"),  // Store image URL or base64 data
     videoURL: text("video_url"),  // Store video URL
     pdfURL: text("pdf_url"),  // Store PDF URL
+    // Code challenge fields
+    initialCode: text("initial_code"),  // Starting code template
+    language: text("language"),  // Programming language
+    instructions: text("instructions"),  // Challenge instructions
+    testCases: text("test_cases"),  // JSON array of test cases
+    timeLimit: integer("time_limit"),  // Time limit in milliseconds
+    memoryLimit: integer("memory_limit")  // Memory limit in MB
   });
   
   export const challengesRelations = relations(challenges, ({ one , many }) => ({
