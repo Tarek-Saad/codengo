@@ -8,6 +8,8 @@ import { CheckCircle, Code2, Play, RotateCcw } from "lucide-react";
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
+import { indentUnit } from '@codemirror/language';
+import { EditorState } from '@codemirror/state';
 
 interface CodeChallengeProps {
   initialCode: string;
@@ -28,7 +30,7 @@ export const CodeChallenge = ({
   testCases,
   onComplete,
 }: CodeChallengeProps) => {
-  const [code, setCode] = useState(initialCode);
+  const [code, setCode] = useState(initialCode.replace(/\\n/g, '\n'));
   const [output, setOutput] = useState<string>("");
   const [isRunning, setIsRunning] = useState(false);
   const [allTestsPassed, setAllTestsPassed] = useState(false);
@@ -179,10 +181,37 @@ export const CodeChallenge = ({
             <CodeMirror
               value={code}
               height="400px"
-              extensions={[getLanguageExtension()]}
+              extensions={[
+                getLanguageExtension(),
+                indentUnit.of('    '),
+                EditorState.tabSize.of(4),
+              ]}
               onChange={setCode}
               theme="dark"
               className="text-sm"
+              basicSetup={{
+                lineNumbers: true,
+                highlightActiveLineGutter: true,
+                highlightSpecialChars: true,
+                foldGutter: true,
+                dropCursor: true,
+                allowMultipleSelections: true,
+                indentOnInput: true,
+                bracketMatching: true,
+                closeBrackets: true,
+                autocompletion: true,
+                rectangularSelection: true,
+                crosshairCursor: true,
+                highlightActiveLine: true,
+                highlightSelectionMatches: true,
+                closeBracketsKeymap: true,
+                defaultKeymap: true,
+                searchKeymap: true,
+                historyKeymap: true,
+                foldKeymap: true,
+                completionKeymap: true,
+                lintKeymap: true
+              }}
             />
           </div>
         </div>
