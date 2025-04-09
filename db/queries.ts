@@ -108,6 +108,12 @@ export const getCourseProgress = cache(async () => {
           unit: true,
           challenges: {
             with: {
+              quizOptions: {
+                orderBy: (quizOptions, { asc }) => [asc(quizOptions.id)]
+              },
+              wordOptions: {
+                orderBy: (wordOptions, { asc }) => [asc(wordOptions.order)]
+              },
               challengeProgress: {
                 where: eq(challengeProgress.userId, userId),
               },
@@ -155,7 +161,12 @@ export const getLesson = cache(async (id?: number) => {
       challenges: {
         orderBy: (challenges, { asc }) => [asc(challenges.order)],
         with: {
-          quizOptions: true,
+          quizOptions: {
+            orderBy: (quizOptions, { asc }) => [asc(quizOptions.id)]
+          },
+          wordOptions: {
+            orderBy: (wordOptions, { asc }) => [asc(wordOptions.order)]
+          },
           challengeProgress: {
             where: eq(challengeProgress.userId, userId),
           }

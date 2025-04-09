@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 const Confetti = dynamic(() => import('react-confetti'), {
   ssr: false
 });
-import { quizOptions, challenges } from "@/db/schema";
+import { quizOptions, challenges, wordOptions } from "@/db/schema";
 import { toast } from "sonner";
 import { Header } from "./header";
 import { QuestionBubble } from "./question-bubble";
@@ -25,6 +25,8 @@ import { ImageChallenge } from "./image-challenge";
 import { VideoChallenge } from "./video-challenge";
 import { PdfChallenge } from "./pdf-challenge";
 import { CodeChallenge } from "./code-challenge";
+import { CompleteChallenge } from "./complete-challenge";
+import { WriteChallenge } from "./write-challenge";
 
 type Props = {
   initialPercentage: number;
@@ -33,6 +35,7 @@ type Props = {
   initialLessonChallenges: (typeof challenges.$inferSelect & {
     completed: boolean;
     quizOptions: (typeof quizOptions.$inferSelect)[];
+    wordOptions?: (typeof wordOptions.$inferSelect)[];
   })[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userSubscription: any;
@@ -92,7 +95,21 @@ export const Challenge = ({
   });
 
   const challenge = challenges[activeIndex];
-  console.log(challenges);
+  console.log('Current challenge:', challenge);
+  console.log('Challenge type:', challenge.type);
+  console.log('Word options:', challenge.wordOptions);
+
+  // For COMPLETE challenges, use wordOptions instead of quizOptions
+  const completeWords = challenge.type === "COMPLETE" && Array.isArray(challenge.wordOptions) ? 
+    challenge.wordOptions
+      .sort(() => Math.random() - 0.5)
+      .map(opt => ({
+        id: opt.id,
+        word: opt.word,
+        order: opt.order,
+        correct: opt.correct
+      })) 
+    : [];
 
   const handleTextComplete = () => {
     startTransition(() => {
@@ -235,6 +252,32 @@ export const Challenge = ({
     );
   }
 
+  // Render Write challenge if type is WRITE
+  if (challenge.type === "WRITE" && Array.isArray(challenge.wordOptions)) {
+    return (
+      <div className="h-full">
+        <Header
+          hearts={hearts}
+          percentage={percentage}
+          hasActiveSubscription={!!userSubscription}
+        />
+        <div className="flex-1 h-full">
+          <WriteChallenge
+            words={challenge.wordOptions.map(opt => ({
+              id: opt.id,
+              word: opt.word,
+              order: opt.order,
+          correct: opt.correct
+        }))}
+        question={challenge.completeQuestion || ""}
+        onComplete={() => handleTextComplete()}
+        disabled={status === "correct"}
+      />
+        </div>
+      </div>
+    );
+  }
+
   // Render PDF challenge if type is PDF
   if (challenge && challenge.type === "PDF" && challenge.pdfURL) {
     return (
@@ -309,6 +352,26 @@ export const Challenge = ({
     );
   }
 
+  if (challenge && challenge.type === "COMPLETE") {
+    return (
+      <div className="h-full">
+        <Header
+          hearts={hearts}
+          percentage={percentage}
+          hasActiveSubscription={!!userSubscription}
+        />
+        <div className="flex-1 h-full flex flex-col items-center justify-center px-4">
+          <CompleteChallenge
+            words={completeWords}
+            onComplete={handleTextComplete}
+            disabled={pending}
+            question={challenge.completeQuestion || ''}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (!challenge) {
     return (
       <>
@@ -374,6 +437,9 @@ export const Challenge = ({
       break;
     case "TEXT":
       title = "Read the text";
+      break;
+    case "COMPLETE":
+      title = "Complete the sentence";
       break;
     default:
       title = challenge.label; // إذا كان النوع غير معروف

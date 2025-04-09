@@ -45,7 +45,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     challenges: many(challenges),
   }));
   
-  export const challengesEnum = pgEnum("type", ["SELECT", "ASSIST","CODE","VIDEO","TEXT","IMAGE","PDF"]);
+  export const challengesEnum = pgEnum("type", ["SELECT", "ASSIST","CODE","VIDEO","TEXT","IMAGE","PDF","COMPLETE","WRITE"]);
 
   export const challenges = pgTable("challenges", {
     id: serial("id").primaryKey(),
@@ -65,7 +65,9 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     instructions: text("instructions"),  // Challenge instructions
     testCases: text("test_cases"),  // JSON array of test cases
     timeLimit: integer("time_limit"),  // Time limit in milliseconds
-    memoryLimit: integer("memory_limit")  // Memory limit in MB
+    memoryLimit: integer("memory_limit"),  // Memory limit in MB
+    // Complete challenge fields
+    completeQuestion:text("complete_question"),
   });
   
   export const challengesRelations = relations(challenges, ({ one , many }) => ({
@@ -74,6 +76,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
       references: [lessons.id],
     }),
     quizOptions: many(quizOptions),
+    wordOptions: many(wordOptions),
     challengeProgress: many(challengeProgress),
   }));
   
@@ -82,6 +85,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     challengeId: integer("challenge_id").references(() => challenges.id, { onDelete: "cascade" }).notNull(),
     text: text("text").notNull(),
     correct: boolean("correct").notNull(),
+    order: integer("order").notNull().default(0),
     imageSrc: text("image_src"),
     audioSrc: text("audio_src"),
   });
@@ -93,7 +97,22 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     }),
   }));
 
-  export const challengeProgress = pgTable("challenge_progress", {
+  export const wordOptions = pgTable("word_options", {
+    id: serial("id").primaryKey(),
+    challengeId: integer("challenge_id").references(() => challenges.id, { onDelete: "cascade" }).notNull(),
+    word: text("word").notNull(),
+    order: integer("order").notNull(),
+    correct: boolean("correct").notNull().default(false),
+});
+
+export const wordOptionsRelations = relations(wordOptions, ({ one }) => ({
+    challenge: one(challenges, {
+        fields: [wordOptions.challengeId],
+        references: [challenges.id],
+    }),
+}));
+
+export const challengeProgress = pgTable("challenge_progress", {
     id: serial("id").primaryKey(),
     userId: text("user_id").notNull(), // TODO: Confirm this doesn't break
     challengeId: integer("challenge_id").references(() => challenges.id, {
