@@ -45,7 +45,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     challenges: many(challenges),
   }));
   
-  export const challengesEnum = pgEnum("type", ["SELECT", "ASSIST","CODE","VIDEO","TEXT","IMAGE","PDF","COMPLETE","WRITE"]);
+  export const challengesEnum = pgEnum("type", ["SELECT", "ASSIST","CODE","VIDEO","TEXT","IMAGE","PDF","COMPLETE","WRITE","PROJECT"]);
 
   export const challenges = pgTable("challenges", {
     id: serial("id").primaryKey(),
@@ -68,6 +68,12 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     memoryLimit: integer("memory_limit"),  // Memory limit in MB
     // Complete challenge fields
     completeQuestion:text("complete_question"),
+    // Project challenge fields
+    projectStructure: text("project_structure"), // JSON structure of expected files/folders
+    projectFiles: text("project_files"), // JSON array of initial files content
+    projectTestCases: text("project_test_cases"), // JSON array of test cases for the entire project
+    testSetup: text("test_setup"), // JSON containing test environment setup (variables, functions, etc)
+    testTeardown: text("test_teardown"), // JSON containing test environment cleanup
   });
   
   export const challengesRelations = relations(challenges, ({ one , many }) => ({

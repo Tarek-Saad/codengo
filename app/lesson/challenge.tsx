@@ -27,6 +27,8 @@ import { PdfChallenge } from "./pdf-challenge";
 import { CodeChallenge } from "./code-challenge";
 import { CompleteChallenge } from "./complete-challenge";
 import { WriteChallenge } from "./write-challenge";
+// import ProjectV2Challenge from "./projectv2-challenge";
+import ProjectV3Challenge from "./projectv3-challenge";
 
 type Props = {
   initialPercentage: number;
@@ -441,6 +443,9 @@ export const Challenge = ({
     case "COMPLETE":
       title = "Complete the sentence";
       break;
+    case "PROJECT":
+      title = "Build the project";
+      break;
     default:
       title = challenge.label; // إذا كان النوع غير معروف
   }
@@ -480,6 +485,18 @@ export const Challenge = ({
                     explanation={status === "correct" ? challenge.explanation : undefined}
                   />
                 </>
+              )}
+
+              {challenge.type === "PROJECT" && (
+                <div className="w-full h-[calc(100vh-12rem)]">
+                  <ProjectV3Challenge
+                    projectId={challenge.id.toString()}
+                    projectStructure={challenge.projectStructure || "[]"}
+                    projectFiles={challenge.projectFiles || "{}"}
+                    language={challenge.language || "javascript"}
+                    disabled={status === "correct"}
+                  />
+                </div>
               )}
             </div>
           </div>
