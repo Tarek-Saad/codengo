@@ -143,6 +143,7 @@ export const challengeProgress = pgTable("challenge_progress", {
     }),
     hearts: integer("hearts").notNull().default(5),
     points: integer("points").notNull().default(0),
+    coins: integer("coins").notNull().default(0),
   });
   
   export const userProgressRelations = relations(userProgress, ({ one }) => ({

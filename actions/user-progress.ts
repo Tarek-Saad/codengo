@@ -33,7 +33,7 @@ export const setActiveCourse = async (courseId: number) => {
 
     if (existingProgress) {
         await db.update(userProgress).set({
-            activeCourseId: courseId,
+          activeCourseId: courseId,
         }).where(eq(userProgress.userId, userId));
 
         revalidatePath("/courses");

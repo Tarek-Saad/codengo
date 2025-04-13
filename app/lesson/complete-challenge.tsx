@@ -11,16 +11,17 @@ interface Props {
     order: number;
     correct: boolean;
   }[]; 
-  onComplete: () => void; 
+  onComplete: () => void;
   disabled?: boolean; 
   question: string;
 }
 
-const WordOption = ({ word, onClick, disabled, isSelected }: { 
+const WordOption = ({ word, onClick, disabled, isSelected, hasErrors }: { 
   word: string; 
   onClick: () => void; 
   disabled?: boolean;
   isSelected?: boolean;
+  hasErrors?: boolean;
 }) => (
   <button
     onClick={onClick}
@@ -32,6 +33,8 @@ const WordOption = ({ word, onClick, disabled, isSelected }: {
       isSelected && "opacity-50 cursor-not-allowed bg-gray-50",
       disabled 
         ? "opacity-50 cursor-not-allowed border-gray-200" 
+        : hasErrors
+        ? "border-red-400 cursor-pointer hover:border-red-500 hover:from-red-100 hover:to-red-50"
         : "border-emerald-200 cursor-pointer hover:border-emerald-300 hover:from-emerald-100 hover:to-emerald-50",
       "border-2"
     )}
@@ -72,6 +75,7 @@ export const CompleteChallenge = ({
       selectedWords.every((word, index) => word.correct && word.order === index + 1);
 
     setIsCorrect(isAnswerCorrect);
+    
     if (isAnswerCorrect) {
       onComplete();
     }

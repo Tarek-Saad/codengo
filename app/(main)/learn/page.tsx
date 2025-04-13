@@ -41,6 +41,7 @@ export default async function LearnPage() {
           activeCourse={userProgress.activeCourse!}
           hearts={userProgress.hearts}
           points={userProgress.points}
+          coins={userProgress.coins}
           hasActiveSubscription={false}
         />
       </StickyWrapper>

@@ -9,10 +9,11 @@ type Props = {
     activeCourse: typeof courses.$inferSelect;
     hearts: number;
     points: number;
+    coins: number;
     hasActiveSubscription: boolean;
 }
 
-export default function UserProgress({ activeCourse, hearts, points, hasActiveSubscription }: Props) {
+export default function UserProgress({ activeCourse, hearts, points,coins, hasActiveSubscription }: Props) {
     return (
         <div className="flex items-center justify-between gap-x-2 w-full">
           <Link href="/courses">
@@ -30,6 +31,12 @@ export default function UserProgress({ activeCourse, hearts, points, hasActiveSu
             <Button variant="ghost" className="text-rose-500">
                 <Image src="/heart.svg" alt="heart" width={22} height={22} className="mr-2" />
                 {hasActiveSubscription ? <InfinityIcon className="w-4 h-4 stroke-[3]" /> : hearts}
+            </Button>
+          </Link>
+          <Link href="/shop">
+          <Button variant="ghost" className="text-yellow-500">
+                <Image src="/points.png" alt="coins" width={30} height={30} className="mr-2" />
+                {coins}
             </Button>
           </Link>
         </div>

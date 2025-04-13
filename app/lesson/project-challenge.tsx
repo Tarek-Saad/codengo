@@ -22,6 +22,10 @@ interface Props {
   projectStructure: string; // JSON string of FileStructure[]
   projectFiles: string; // JSON string of initial files
   language: string;
+  onCorrect: () => void;
+  onWrong: () => void;
+  hasErrors: boolean;
+  setHasErrors: (value: boolean) => void;
   disabled?: boolean;
 }
 
