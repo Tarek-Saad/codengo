@@ -44,3 +44,5 @@ next-env.d.ts
 
 /app/admin
 /app/api
+
+/app/lesson/challenge-logic.tsx

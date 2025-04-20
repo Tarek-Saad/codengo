@@ -1,5 +1,6 @@
 import { getCourses, getUserProgress } from "@/db/queries";
 import List from "./list";
+import CourseButtons from "./components/CourseButtons";
 
 export default async function CoursesPage() {
   const [courses, userProgress] = await Promise.all([
@@ -16,9 +17,14 @@ export default async function CoursesPage() {
         </span>
       </h1>
       <List 
-      courses={courses} 
-      activeCourseId={userProgress?.activeCourseId}
-       />
+        courses={courses} 
+        activeCourseId={userProgress?.activeCourseId}
+      />
+      <div className="bg-gray-100 rounded-2xl h-200">
+      <div className="mt-8 mb-8 fixed bottom-6 w-full h-50 mx-auto bg-gray-100 rounded-2xl">
+        <CourseButtons />
+      </div>
+      </div>
     </div>
   );
 }
