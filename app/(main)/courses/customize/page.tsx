@@ -3,7 +3,20 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
+import { createCourse } from "../actions";
+
+type ChallengeType = "SELECT" | "ASSIST" | "CODE" | "VIDEO" | "TEXT" | "IMAGE" | "PDF" | "COMPLETE" | "WRITE" | "PROJECT";
+
+interface LearningObject {
+  name: string;
+  type: string;
+  description: string;
+  prerequisites?: string[];
+  objectives?: string[];
+  duration?: number;
+}
 
 interface AnalysisResponse {
   knowledge_base: string[];
@@ -14,6 +27,7 @@ export default function CustomizeCourse() {
   const router = useRouter();
   const [step, setStep] = useState<'input' | 'analyzing' | 'result'>('input');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [userInput, setUserInput] = useState({
     user_knowledge: '',
     user_goal: ''
@@ -58,6 +72,10 @@ export default function CustomizeCourse() {
   };
 
   if (step === 'analyzing') {
+    console.log('Analyzing...');
+    console.log('User Input:', userInput);
+    console.log('Analysis Result:', analysisResult);
+
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div className="mb-8">
@@ -78,6 +96,8 @@ export default function CustomizeCourse() {
   }
 
   if (step === 'result') {
+    console.log(analysisResult);
+
     return (
       <div className="max-w-2xl mx-auto px-4 py-16">
         <div className="bg-white rounded-2xl p-8 shadow-lg">
@@ -122,7 +142,101 @@ export default function CustomizeCourse() {
 
           <div className="mt-8 flex justify-between">
             <Button variant="ghost" onClick={() => setStep('input')}>Not right? Try again</Button>
-            <Button variant="secondary" onClick={() => router.push('/courses')}>Continue</Button>
+            <Button 
+              variant="secondary" 
+              onClick={async () => {
+                try {
+                  // Ensure we have valid data for the API
+                  if (!analysisResult?.learning_goal?.[0]) {
+                    throw new Error('No learning goal detected from analysis');
+                  }
+
+                  const requestPayload = {
+                    learner_email: 'kareem@example.com',
+                    learning_goals: [analysisResult.learning_goal[0]],
+                    // If no knowledge base, use a default one
+                    knowledge_base: analysisResult.knowledge_base?.length ? 
+                      analysisResult.knowledge_base : 
+                      ['Introduction to Programming']
+                  };
+
+                  console.log('Sending request with:', requestPayload);
+                  setIsLoading(true);
+
+                  try {
+                    const response = await fetch('https://iia-one.vercel.app/api/selection/best-path', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(requestPayload)
+                  });
+
+                  if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error(`Failed to get best path: ${response.status} ${errorText}`);
+                  }
+
+                    const pathData = await response.json();
+                    console.log('Best Path Result:', pathData);
+                    
+                    // Map the learning object types to our challenge types
+                    const typeMapping: Record<string, ChallengeType> = {
+                      "introVideo": "VIDEO",
+                      "realWorld": "PROJECT",
+                      "quiz": "SELECT",
+                      "introArticle": "TEXT",
+                      "writeCode": "CODE",
+                      "SBSVideo": "VIDEO",
+                      "supportArticle": "TEXT",
+                      "finalAssignment": "PROJECT",
+                      "instructuinVideo": "VIDEO",
+                      "PDFGuide": "PDF",
+                      "HowTo-video/PDF": "VIDEO",
+                      "exerciseTask": "CODE",
+                      "tutorial-video/PDF": "VIDEO",
+                      "summary": "TEXT",
+                      "interactiveDemo": "ASSIST"
+                    };
+
+                    console.log('Learning Objects:', pathData.learning_objects);
+                    // Map the learning objects to include our challenge types
+                    const mappedObjects = pathData.learning_objects.map((obj: LearningObject) => ({
+                      ...obj,
+                      type: typeMapping[obj.type] || "TEXT" // Default to TEXT if type not found
+                    }));
+                    
+                    // Get the last learning object as the course title
+                    const lastLO = mappedObjects[mappedObjects.length - 1];
+                    
+                    // Create the course with unit and lessons
+                    const result = await createCourse(lastLO.name, mappedObjects);
+                    
+                    if (!result.course) {
+                      throw new Error('Failed to create course');
+                    }
+                    
+                    console.log('Created course structure:', result);
+
+                    // Navigate to courses page
+                    router.push('/courses');
+                  } catch (error) {
+                    console.error('Error:', error);
+                    setError(error instanceof Error ? error.message : 'Failed to generate learning path');
+                    throw error;
+                  } finally {
+                    setIsLoading(false);
+                  }
+                } catch (error) {
+                  console.error('Error getting best path:', error);
+                  setError(error instanceof Error ? error.message : 'Failed to generate learning path. Please try again.');
+                }
+              }}
+            >
+              Continue
+            </Button>
           </div>
         </div>
       </div>
@@ -130,7 +244,15 @@ export default function CustomizeCourse() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-16">
+    <div className="max-w-2xl mx-auto px-4 py-16 relative">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col items-center gap-4">
+            <Loader2 className="w-12 h-12 text-green-500 animate-spin" />
+            <p className="text-lg font-medium text-gray-700">Generating your personalized learning path...</p>
+          </div>
+        </div>
+      )}
       <div className="bg-green-400 rounded-3xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">Les customize your learning path!</h1>
         <p className="text-green-50 mb-8">Tell us what you know & where you wanna go</p>
