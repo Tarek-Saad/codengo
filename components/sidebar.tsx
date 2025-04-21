@@ -28,8 +28,8 @@ export default function Sidebar({ className }: Props) {
       <div className="flex flex-col gap-y-2 flex-1">
         <SidebarItem label="learn" href="/learn" icon='/learn.svg' />
         <SidebarItem label="leaderboard" href="/leaderboard" icon='/leaderboard.svg' />
-        <SidebarItem label="questions" href="/ques" icon='/quests.svg' />
         <SidebarItem label="shop" href="/shop" icon='/shop.svg' />
+        <SidebarItem label="profile" href="/profile" icon='/profile.svg' />
       </div>
       <div className="p-4">
         <ClerkLoading>

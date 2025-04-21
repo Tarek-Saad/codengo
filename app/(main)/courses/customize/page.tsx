@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
+import { useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -25,9 +26,10 @@ interface AnalysisResponse {
 
 export default function CustomizeCourse() {
   const router = useRouter();
-  const [step, setStep] = useState<'input' | 'analyzing' | 'result'>('input');
+  const [step, setStep] = useState<'input' | 'analyzing' | 'result' | 'generating'>('input');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
   const [userInput, setUserInput] = useState({
     user_knowledge: '',
     user_goal: ''
@@ -71,26 +73,39 @@ export default function CustomizeCourse() {
     }
   };
 
-  if (step === 'analyzing') {
+  if (step === 'analyzing' || step === 'generating') {
     console.log('Analyzing...');
     console.log('User Input:', userInput);
     console.log('Analysis Result:', analysisResult);
 
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="mb-8">
-          <Image
-            src="/mascot.png" // Make sure to add your mascot image
-            alt="CodeNGo Mascot"
-            width={120}
-            height={120}
-            className="mx-auto"
-          />
-        </div>
-        <div className="animate-pulse">
-          <h2 className="text-2xl font-bold mb-4">Analyzing your inputs..</h2>
-          <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-        </div>
+        {step === 'analyzing' && (
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-lg font-medium">Analyzing your input...</p>
+          </div>
+        )}
+
+        {step === 'generating' && (
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 p-8 bg-white rounded-xl shadow-lg">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <div className="text-center space-y-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-purple-600 bg-clip-text text-transparent">
+                Generating Your Personalized Course
+              </h2>
+              <div className="space-y-2 text-gray-600">
+                <p><span className="font-semibold">Email:</span> {user?.emailAddresses?.[0]?.emailAddress}</p>
+                <p><span className="font-semibold">Goal:</span> {analysisResult?.learning_goal?.[0]}</p>
+                <p><span className="font-semibold">Knowledge Base:</span> {analysisResult?.knowledge_base?.join(', ') || 'Introduction to Programming'}</p>
+              </div>
+              <p className="mt-6 text-gray-700">
+                We&apos;re crafting a personalized learning path tailored to your experience and goals.
+                This may take a moment as we ensure the perfect course selection for you.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -151,8 +166,12 @@ export default function CustomizeCourse() {
                     throw new Error('No learning goal detected from analysis');
                   }
 
+                  if (!user?.emailAddresses?.[0]?.emailAddress) {
+                    throw new Error('Please sign in with an email address');
+                  }
+
                   const requestPayload = {
-                    learner_email: 'kareem@example.com',
+                    learner_email: user.emailAddresses[0].emailAddress,
                     learning_goals: [analysisResult.learning_goal[0]],
                     // If no knowledge base, use a default one
                     knowledge_base: analysisResult.knowledge_base?.length ? 
@@ -160,7 +179,7 @@ export default function CustomizeCourse() {
                       ['Introduction to Programming']
                   };
 
-                  console.log('Sending request with:', requestPayload);
+                  setStep('generating');
                   setIsLoading(true);
 
                   try {
