@@ -495,6 +495,11 @@ export const Challenge = ({
                     projectFiles={challenge.projectFiles || "{}"}
                     language={challenge.language || "javascript"}
                     disabled={status === "correct"}
+                    onSubmit={() => {
+                      // TODO: In future work, add code validation here
+                      // For now, just mark as correct and move to next challenge
+                      handleTextComplete();
+                    }}
                   />
                 </div>
               )}

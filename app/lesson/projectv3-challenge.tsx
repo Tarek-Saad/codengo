@@ -9,6 +9,7 @@ interface Props {
   projectFiles: string;
   language: string;
   disabled?: boolean;
+  onSubmit?: () => void;
 }
 
 const ProjectV3Challenge: React.FC<Props> = ({
@@ -16,7 +17,8 @@ const ProjectV3Challenge: React.FC<Props> = ({
   projectStructure,
   projectFiles,
   language,
-  disabled = false
+  disabled = false,
+  onSubmit
 }) => {
   const embedRef = useRef<HTMLDivElement>(null);
   const [localProjectState, setLocalProjectState] = useState<{ files: Record<string, string> } | null>(null);
@@ -152,9 +154,25 @@ const ProjectV3Challenge: React.FC<Props> = ({
     }
   }, [projectId, projectFiles, projectStructure, language, disabled, localProjectState]);
 
+  const handleSubmit = () => {
+    // TODO: In future, add code validation logic here
+    if (onSubmit) {
+      onSubmit();
+    }
+  };
+
   return (
-    <div className="h-full w-full rounded-lg border">
-      <div ref={embedRef} className="h-full w-full" />
+    <div className="h-full w-full rounded-lg border flex flex-col">
+      <div ref={embedRef} className="flex-1 w-full" />
+      <div className="p-4 border-t bg-gray-50">
+        <button
+          onClick={handleSubmit}
+          disabled={disabled}
+          className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {disabled ? 'Project Submitted' : 'Submit Project'}
+        </button>
+      </div>
     </div>
   );
 };
