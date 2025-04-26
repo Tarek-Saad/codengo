@@ -16,12 +16,6 @@ interface PathLearningObject {
   type: string;
 }
 
-interface MappedLearningObject {
-  lo_id: number;
-  name: string;
-  type: ChallengeType;
-}
-
 interface AnalysisResponse {
   knowledge_base: string[];
   learning_goal: string[];
@@ -240,7 +234,7 @@ export default function CustomizeCourse() {
                     // Create the course with unit and lessons
                     const result = await createCourse(courseTitle, mappedObjects);
                     
-                    if (!result.course) {
+                    if (!result?.course) {
                       throw new Error('Failed to create course');
                     }
                     

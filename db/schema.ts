@@ -43,8 +43,28 @@ export const coursesRelations = relations(courses, ({ many }) => ({
       references: [units.id],
     }),
     challenges: many(challenges),
+    lessonChallenges: many(lessonChallenges),
   }));
   
+  // New join table for lesson-challenge relationships
+  export const lessonChallenges = pgTable("lesson_challenges", {
+    id: serial("id").primaryKey(),
+    lessonId: integer("lesson_id").references(() => lessons.id, { onDelete: "cascade" }).notNull(),
+    challengeId: integer("challenge_id").references(() => challenges.id, { onDelete: "cascade" }).notNull(),
+    order: integer("order").notNull(),
+  });
+  
+  export const lessonChallengesRelations = relations(lessonChallenges, ({ one }) => ({
+    lesson: one(lessons, {
+      fields: [lessonChallenges.lessonId],
+      references: [lessons.id],
+    }),
+    challenge: one(challenges, {
+      fields: [lessonChallenges.challengeId],
+      references: [challenges.id],
+    }),
+  }));
+
   export const challengesEnum = pgEnum("type", ["SELECT", "ASSIST","CODE","VIDEO","TEXT","IMAGE","PDF","COMPLETE","WRITE","PROJECT"]);
 
   export const challenges = pgTable("challenges", {
@@ -154,4 +174,3 @@ export const challengeProgress = pgTable("challenge_progress", {
   }));
 
   
-
