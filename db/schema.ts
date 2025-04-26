@@ -93,6 +93,8 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     projectTestCases: text("project_test_cases"), // JSON array of test cases for the entire project
     testSetup: text("test_setup"), // JSON containing test environment setup (variables, functions, etc)
     testTeardown: text("test_teardown"), // JSON containing test environment cleanup
+    // Web view content
+    webViewContent: text("web_view_content"), // HTML/Markdown content for web view
   });
   
   export const challengesRelations = relations(challenges, ({ one, many }) => ({

@@ -227,33 +227,69 @@ export async function createCourse(title: string, learningObjects: LearningObjec
             console.log(`Existing challenge:`, existingChallenge);
 
             if (existingChallenge) {
-              console.log(`Found existing challenge ${existingChallenge.id}, updating lesson reference for ${lesson.id}`);
+              console.log(`Found existing challenge ${existingChallenge.id}, creating duplicate for lesson ${lesson.id}`);
               
-              // Update the existing challenge to reference this lesson
-              const [updatedChallenge] = await db.update(challenges)
-                .set({
-                  lessonId: lesson.id,
-                  order: j + 1,
-                  // Update only the fields that might come from subLO
-                  label: existingChallenge.label || subLO.name,
-                  explanation: existingChallenge.explanation || subLO.material
-                })
-                .where(eq(challenges.id, referenceId))
+              // Create a new challenge based on the existing one
+              const newChallengeData = {
+                ...existingChallenge,
+                id: undefined, // Remove id to create a new record
+                lessonId: lesson.id,
+                order: j + 1,
+                label: existingChallenge.label || subLO.name,
+                explanation: existingChallenge.explanation || subLO.material
+              };
+              
+              const [duplicatedChallenge] = await db.insert(challenges)
+                .values(newChallengeData)
                 .returning();
               
-              if (updatedChallenge) {
-                console.log(`Updated challenge ${updatedChallenge.id} to reference lesson ${lesson.id}`);
+              if (duplicatedChallenge) {
+                console.log(`Created duplicate challenge ${duplicatedChallenge.id} for lesson ${lesson.id}`);
+                
+                // If it's a SELECT challenge, duplicate the quiz options too
+                if (existingChallenge.type === 'SELECT') {
+                  const existingOptions = await db.select().from(quizOptions)
+                    .where(eq(quizOptions.challengeId, referenceId));
+                  
+                  if (existingOptions.length > 0) {
+                    const newOptionsData = existingOptions.map(option => ({
+                      ...option,
+                      id: undefined,
+                      challengeId: duplicatedChallenge.id
+                    }));
+                    
+                    await db.insert(quizOptions).values(newOptionsData);
+                    console.log(`Duplicated ${newOptionsData.length} quiz options for challenge ${duplicatedChallenge.id}`);
+                  }
+                }
+                
                 continue; // Skip to next subLO since we've handled this one
               }
             }
             
-            // If we get here, either the challenge wasn't found or update failed
-            console.log(`Warning: Referenced challenge ${subLO.reference} not found or update failed, creating new challenge`);
+            // If we get here, either the challenge wasn't found or duplication failed
+            console.log(`Warning: Referenced challenge ${subLO.reference} not found or duplication failed, creating new challenge`);
           }
           
           // Create new challenge (either because there's no reference or reference handling failed)
           console.log('Creating new challenge for:', subLO.name);
-          const challengeType = subLOTypeToChallenge[subLO.name] || 'TEXT';
+          let challengeType;
+          
+          // Determine the challenge type based on the material content
+          if (subLO.material) {
+            if (subLO.material.includes('youtube.com')) {
+              challengeType = 'VIDEO';
+            } else if (subLO.material.includes('.pdf')) {
+              challengeType = 'PDF';
+            } else if (subLO.material.includes('forms.gle') || subLO.material.includes('forms.google.com')) {
+              challengeType = 'SELECT';
+            } else {
+              challengeType = 'TEXT'; // Default to TEXT for web content
+            }
+          } else {
+            challengeType = subLOTypeToChallenge[subLO.name] || 'TEXT';
+          }
+          
           console.log('Mapped challenge type:', challengeType);
           
           // Prepare base challenge data
@@ -263,11 +299,22 @@ export async function createCourse(title: string, learningObjects: LearningObjec
             label: subLO.name,
             order: j + 1,
             explanation: subLO.material || undefined,
+            webViewContent: subLO.material || undefined, // Store material in webViewContent for web view
           };
 
           // Add specific fields based on challenge type
           let challengeData;
-          if (challengeType === 'CODE') {
+          if (challengeType === 'VIDEO' && subLO.material?.includes('youtube.com')) {
+            challengeData = {
+              ...baseData,
+              videoURL: subLO.material,
+            };
+          } else if (challengeType === 'PDF' && subLO.material?.includes('.pdf')) {
+            challengeData = {
+              ...baseData,
+              pdfURL: subLO.material,
+            };
+          } else if (challengeType === 'CODE') {
             challengeData = {
               ...baseData,
               initialCode: '// Write your code here',

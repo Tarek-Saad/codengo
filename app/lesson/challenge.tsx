@@ -27,6 +27,7 @@ import { PdfChallenge } from "./pdf-challenge";
 import { CodeChallenge } from "./code-challenge";
 import { CompleteChallenge } from "./complete-challenge";
 import { WriteChallenge } from "./write-challenge";
+import { WebView } from "./web-view";
 // import ProjectV2Challenge from "./projectv2-challenge";
 import ProjectV3Challenge from "./projectv3-challenge";
 
@@ -336,22 +337,40 @@ export const Challenge = ({
   }
 
   // Render text challenge if type is TEXT
-  if (challenge && challenge.type === "TEXT" && challenge.textContent) {
-    return (
-      <div className="h-full">
-        <Header
-          hearts={hearts}
-          percentage={percentage}
-          hasActiveSubscription={!!userSubscription}
-        />
-        <div className="flex-1 h-full">
-          <TextChallenge
-            content={challenge.textContent}
-            onComplete={handleTextComplete}
+  if (challenge && challenge.type === "TEXT") {
+    if (challenge.webViewContent) {
+      return (
+        <div className="h-full">
+          <Header
+            hearts={hearts}
+            percentage={percentage}
+            hasActiveSubscription={!!userSubscription}
           />
+          <div className="flex-1 h-full">
+            <WebView
+              content={challenge.webViewContent}
+              onComplete={handleTextComplete}
+            />
+          </div>
         </div>
-      </div>
-    );
+      );
+    } else if (challenge.textContent) {
+      return (
+        <div className="h-full">
+          <Header
+            hearts={hearts}
+            percentage={percentage}
+            hasActiveSubscription={!!userSubscription}
+          />
+          <div className="flex-1 h-full">
+            <TextChallenge
+              content={challenge.textContent}
+              onComplete={handleTextComplete}
+            />
+          </div>
+        </div>
+      );
+    }
   }
 
   if (challenge && challenge.type === "COMPLETE") {
