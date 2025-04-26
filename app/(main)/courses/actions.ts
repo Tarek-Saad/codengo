@@ -63,8 +63,102 @@ export async function createCourse(title: string, learningObjects: LearningObjec
     console.log('Creating course:', title);
     console.log('Learning objects:', learningObjects);
 
-    // Create the course
-    const imageSrc = `/images/${title.toLowerCase().replace(/ /g, '-')}.png`;
+    // Create the course with an appropriate icon
+    const normalizedTitle = title.toLowerCase();
+    let iconSet = 'logos';
+    let iconName = 'education';
+    
+    // Map course titles to appropriate icons based on content
+    if (normalizedTitle.includes('javascript')) iconName = 'javascript';
+    else if (normalizedTitle.includes('python')) iconName = 'python';
+    else if (normalizedTitle.includes('react')) iconName = 'react';
+    else if (normalizedTitle.includes('node')) iconName = 'nodejs';
+    else if (normalizedTitle.includes('typescript')) iconName = 'typescript';
+    else if (normalizedTitle.includes('angular')) iconName = 'angular';
+    else if (normalizedTitle.includes('vue')) iconName = 'vue';
+    else if (normalizedTitle.includes('java')) iconName = 'java';
+    else if (normalizedTitle.includes('css')) iconName = 'css-3';
+    else if (normalizedTitle.includes('html')) iconName = 'html-5';
+    // Database related
+    else if (normalizedTitle.includes('database') || normalizedTitle.includes('sql') || normalizedTitle.includes('nosql')) {
+      iconSet = 'devicon';
+      iconName = 'database';
+    }
+    // Data Structures and Algorithms
+    else if (normalizedTitle.includes('data structure') || normalizedTitle.includes('algorithm') || 
+             normalizedTitle.includes('sorting') || normalizedTitle.includes('searching')) {
+      iconSet = 'carbon';
+      iconName = 'data-structured';
+    }
+    // AI and ML
+    else if (normalizedTitle.includes('artificial intelligence') || normalizedTitle.includes('machine learning') || 
+             normalizedTitle.includes('neural') || normalizedTitle.includes('deep learning')) {
+      iconSet = 'carbon';
+      iconName = 'machine-learning';
+    }
+    // Cloud and Web
+    else if (normalizedTitle.includes('cloud') || normalizedTitle.includes('aws') || normalizedTitle.includes('azure')) {
+      iconSet = 'devicon';
+      iconName = 'cloud';
+    }
+    // Cybersecurity
+    else if (normalizedTitle.includes('security') || normalizedTitle.includes('crypto') || normalizedTitle.includes('encryption')) {
+      iconSet = 'carbon';
+      iconName = 'security';
+    }
+    // Mobile Development
+    else if (normalizedTitle.includes('mobile') || normalizedTitle.includes('android') || normalizedTitle.includes('ios')) {
+      iconSet = 'ant-design';
+      iconName = 'mobile';
+    }
+    // Testing
+    else if (normalizedTitle.includes('test') || normalizedTitle.includes('debugging')) {
+      iconSet = 'carbon';
+      iconName = 'test';
+    }
+    // Version Control
+    else if (normalizedTitle.includes('git')) iconName = 'git';
+    // IoT and Embedded
+    else if (normalizedTitle.includes('iot') || normalizedTitle.includes('embedded')) {
+      iconSet = 'carbon';
+      iconName = 'iot-platform';
+    }
+    // Networks
+    else if (normalizedTitle.includes('network') || normalizedTitle.includes('protocol')) {
+      iconSet = 'carbon';
+      iconName = 'network';
+    }
+    // Default programming/coding icon
+    else {
+      iconSet = 'material-symbols';
+      iconName = 'code';
+    }
+
+    // Construct the icon URL based on the icon set and name
+    let iconUrl: string;
+    
+    switch (iconSet) {
+      case 'logos':
+        iconUrl = `https://api.iconify.design/${iconSet}/${iconName}.svg?color=%2310b981`;
+        break;
+      case 'carbon':
+        iconUrl = `https://api.iconify.design/${iconSet}/${iconName}.svg?color=%2310b981`;
+        break;
+      case 'devicon':
+        iconUrl = `https://api.iconify.design/${iconSet}/${iconName}.svg?color=%2310b981`;
+        break;
+      case 'ant-design':
+        iconUrl = `https://api.iconify.design/${iconSet}/${iconName}.svg?color=%2310b981`;
+        break;
+      case 'material-symbols':
+        iconUrl = `https://api.iconify.design/${iconSet}/${iconName}.svg?color=%2310b981`;
+        break;
+      default:
+        iconUrl = `https://api.iconify.design/material-symbols/code.svg?color=%2310b981`;
+    }
+
+    const imageSrc = iconUrl;
+    
     const [newCourse] = await db.insert(courses).values({
       title,
       imageSrc,
@@ -212,7 +306,7 @@ export async function createCourse(title: string, learningObjects: LearningObjec
           } else if (challengeType === 'VIDEO') {
             challengeData = {
               ...baseData,
-              videoURL: 'https://example.com/video',
+              videoURL: subLO.material || undefined,
             };
           } else if (challengeType === 'PROJECT') {
             challengeData = {
