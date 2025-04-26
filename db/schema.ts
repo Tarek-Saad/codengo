@@ -71,7 +71,6 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     id: serial("id").primaryKey(),
     lessonId: integer("lesson_id").references(() => lessons.id, { onDelete: "cascade" }).notNull(),
     type: challengesEnum("type").notNull(),
-
     label: text("label").notNull(),
     order: integer("order").notNull(),
     explanation: text("explanation"),

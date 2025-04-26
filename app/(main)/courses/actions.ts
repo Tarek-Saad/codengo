@@ -2,7 +2,7 @@
 
 import db from "@/db/drizzle";
 import { courses, units, lessons, challenges, quizOptions } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 interface LearningObject {
   lo_id: number;
@@ -213,71 +213,42 @@ export async function createCourse(title: string, learningObjects: LearningObjec
           if (subLO.reference) {
             // Try to find existing challenge
             console.log(`Looking for existing challenge with ID ${subLO.reference}`);
-            try {
-              const referenceId = parseInt(subLO.reference);
-              if (isNaN(referenceId)) {
-                throw new Error(`Invalid reference ID: ${subLO.reference}`);
-              }
-
-              // Find the existing challenge
-              const existingChallenge = await db.query.challenges.findFirst({
-                where: eq(challenges.id, referenceId),
-              });
-
-              if (existingChallenge) {
-                console.log(`Found existing challenge ${existingChallenge.id}, copying to lesson ${lesson.id}`);
-                
-                // Create a new challenge with the same content as the referenced one
-                const [newChallenge] = await db.insert(challenges).values({
-                  lessonId: lesson.id,
-                  type: existingChallenge.type as ChallengeType,
-                  label: existingChallenge.label || subLO.name,
-                  order: j + 1,
-                  explanation: existingChallenge.explanation || subLO.material,
-                  textContent: existingChallenge.textContent,
-                  videoURL: existingChallenge.videoURL,
-                  imageContent: existingChallenge.imageContent,
-                  pdfURL: existingChallenge.pdfURL,
-                  initialCode: existingChallenge.initialCode,
-                  language: existingChallenge.language,
-                  testCases: existingChallenge.testCases,
-                  projectStructure: existingChallenge.projectStructure,
-                  projectFiles: existingChallenge.projectFiles,
-                  completeQuestion: existingChallenge.completeQuestion,
-                }).returning();
-                
-                if (newChallenge) {
-                  console.log(`Created new challenge ${newChallenge.id} based on ${referenceId}`);
-                  
-                  // If it's a SELECT challenge, copy the quiz options
-                  if (existingChallenge.type === 'SELECT') {
-                    const existingOptions = await db.select().from(quizOptions)
-                      .where(eq(quizOptions.challengeId, referenceId));
-                    
-                    if (existingOptions.length > 0) {
-                      const quizOptionsData = existingOptions.map(option => ({
-                        challengeId: newChallenge.id,
-                        text: option.text,
-                        correct: option.correct,
-                        order: option.order,
-                        imageSrc: option.imageSrc,
-                        audioSrc: option.audioSrc,
-                      }));
-                      
-                      await db.insert(quizOptions).values(quizOptionsData);
-                      console.log(`Copied ${quizOptionsData.length} quiz options from challenge ${referenceId} to ${newChallenge.id}`);
-                    }
-                  }
-                }
-                
-                continue;
-              } else {
-                console.log(`Warning: Referenced challenge ${subLO.reference} not found, creating new challenge`);
-                throw new Error('Challenge not found');
-              }
-            } catch (error) {
-              console.error(`Error handling reference ${subLO.reference}:`, error);
+            const referenceId = parseInt(subLO.reference);
+            
+            if (isNaN(referenceId)) {
+              throw new Error(`Invalid reference ID: ${subLO.reference}`);
             }
+
+            // Find the existing challenge
+            const existingChallenge = await db.query.challenges.findFirst({
+              where: eq(challenges.id, referenceId),
+            });
+
+            console.log(`Existing challenge:`, existingChallenge);
+
+            if (existingChallenge) {
+              console.log(`Found existing challenge ${existingChallenge.id}, updating lesson reference for ${lesson.id}`);
+              
+              // Update the existing challenge to reference this lesson
+              const [updatedChallenge] = await db.update(challenges)
+                .set({
+                  lessonId: lesson.id,
+                  order: j + 1,
+                  // Update only the fields that might come from subLO
+                  label: existingChallenge.label || subLO.name,
+                  explanation: existingChallenge.explanation || subLO.material
+                })
+                .where(eq(challenges.id, referenceId))
+                .returning();
+              
+              if (updatedChallenge) {
+                console.log(`Updated challenge ${updatedChallenge.id} to reference lesson ${lesson.id}`);
+                continue; // Skip to next subLO since we've handled this one
+              }
+            }
+            
+            // If we get here, either the challenge wasn't found or update failed
+            console.log(`Warning: Referenced challenge ${subLO.reference} not found or update failed, creating new challenge`);
           }
           
           // Create new challenge (either because there's no reference or reference handling failed)

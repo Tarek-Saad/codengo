@@ -45,7 +45,7 @@ export default function CustomizeCourse() {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Origin': window.location.origin
+          'Origin': typeof window !== 'undefined' ? window.location.origin : ''
         },
         credentials: 'include',
         body: JSON.stringify({
