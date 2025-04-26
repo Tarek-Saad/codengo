@@ -10,13 +10,16 @@ import { createCourse } from "../actions";
 
 type ChallengeType = "SELECT" | "ASSIST" | "CODE" | "VIDEO" | "TEXT" | "IMAGE" | "PDF" | "COMPLETE" | "WRITE" | "PROJECT";
 
-interface LearningObject {
+interface PathLearningObject {
+  lo_id: number;
   name: string;
   type: string;
-  description: string;
-  prerequisites?: string[];
-  objectives?: string[];
-  duration?: number;
+}
+
+interface MappedLearningObject {
+  lo_id: number;
+  name: string;
+  type: ChallengeType;
 }
 
 interface AnalysisResponse {
@@ -221,17 +224,21 @@ export default function CustomizeCourse() {
                     };
 
                     console.log('Learning Objects:', pathData.learning_objects);
-                    // Map the learning objects to include our challenge types
-                    const mappedObjects = pathData.learning_objects.map((obj: LearningObject) => ({
-                      ...obj,
+                    
+                    // Map the learning objects and ensure they have the correct type
+                    const mappedObjects = pathData.learning_objects.map((obj: PathLearningObject) => ({
+                      lo_id: obj.lo_id,
+                      name: obj.name,
                       type: typeMapping[obj.type] || "TEXT" // Default to TEXT if type not found
                     }));
                     
-                    // Get the last learning object as the course title
-                    const lastLO = mappedObjects[mappedObjects.length - 1];
+                    console.log('Mapped Learning Objects:', mappedObjects);
+                    
+                    // Get the course title from the last learning object name
+                    const courseTitle = mappedObjects[mappedObjects.length - 1]?.name || 'New Course';
                     
                     // Create the course with unit and lessons
-                    const result = await createCourse(lastLO.name, mappedObjects);
+                    const result = await createCourse(courseTitle, mappedObjects);
                     
                     if (!result.course) {
                       throw new Error('Failed to create course');

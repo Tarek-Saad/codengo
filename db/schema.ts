@@ -37,7 +37,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     order: integer("order").notNull(),
   });
   
-  export const lessonsRelations = relations(lessons, ({ one , many }) => ({
+  export const lessonsRelations = relations(lessons, ({ one, many }) => ({
     unit: one(units, {
       fields: [lessons.unitId],
       references: [units.id],
@@ -76,7 +76,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
     testTeardown: text("test_teardown"), // JSON containing test environment cleanup
   });
   
-  export const challengesRelations = relations(challenges, ({ one , many }) => ({
+  export const challengesRelations = relations(challenges, ({ one, many }) => ({
     lesson: one(lessons, {
       fields: [challenges.lessonId],
       references: [lessons.id],
@@ -143,6 +143,7 @@ export const challengeProgress = pgTable("challenge_progress", {
     }),
     hearts: integer("hearts").notNull().default(5),
     points: integer("points").notNull().default(0),
+    coins: integer("coins").notNull().default(0),
   });
   
   export const userProgressRelations = relations(userProgress, ({ one }) => ({
@@ -152,4 +153,5 @@ export const challengeProgress = pgTable("challenge_progress", {
     }),
   }));
 
+  
 
