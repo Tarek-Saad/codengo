@@ -280,7 +280,7 @@ export async function createCourse(title: string, learningObjects: LearningObjec
           if (subLO.material) {
             if (subLO.material.includes('youtube.com') || subLO.material.includes('youtu.be')) {
               challengeType = 'VIDEO';
-            } else if (subLO.reference && (subLO.reference.includes('youtube.com') || subLO.reference.includes('youtu.be'))) {
+            } else if (subLO.reference && (subLO.reference.includes('youtu') || subLO.reference.includes('youtu.be'))) {
               challengeType = 'VIDEO';
               // Use reference as the video URL if it's a YouTube link
               subLO.material = subLO.reference;
