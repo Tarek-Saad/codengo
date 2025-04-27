@@ -9,22 +9,49 @@ interface WebViewProps {
   onComplete: () => void;
 }
 
-const isValidUrl = (str: string) => {
+const sanitizeUrl = (str: string) => {
   try {
-    new URL(str);
-    return true;
+    // Clean the URL by removing any trailing whitespace or newlines
+    const cleanUrl = str.trim();
+    const url = new URL(cleanUrl);
+    
+    // Add https:// if protocol is missing
+    if (!url.protocol) {
+      url.protocol = 'https:';
+    }
+    
+    // Handle special cases for known domains
+    if (url.hostname.includes('quizizz.com')) {
+      // Ensure proper Quizizz embed URL
+      return `https://quizizz.com/embed/${url.pathname.split('/').pop()}`;
+    } else if (url.hostname.includes('forms.gle') || url.hostname.includes('docs.google.com')) {
+      // Ensure proper Google Forms embed URL
+      return url.toString().replace('/viewform', '/viewform?embedded=true');
+    }
+    
+    return url.toString();
   } catch {
-    return false;
+    return null;
   }
 };
 
-export const WebView = ({ content, onComplete }: WebViewProps) => {
+export const WebView = ({ content: rawContent, onComplete }: WebViewProps) => {
+  // Clean and validate the URL
+  const [url, setUrl] = useState(() => {
+    return typeof rawContent === 'string' ? sanitizeUrl(rawContent) : null;
+  });
   const [hasRead, setHasRead] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Update URL when content changes
+    const sanitized = typeof rawContent === 'string' ? sanitizeUrl(rawContent) : null;
+    setUrl(sanitized);
+  }, [rawContent]);
+
+  useEffect(() => {
     // Auto-enable continue button after 10 seconds for external content
-    if (isValidUrl(content)) {
+    if (url) {
       const timer = setTimeout(() => {
         setHasRead(true);
         setIsLoading(false);
@@ -32,11 +59,11 @@ export const WebView = ({ content, onComplete }: WebViewProps) => {
       return () => clearTimeout(timer);
     }
     setIsLoading(false);
-  }, [content]);
+  }, [url]);
 
   // Function to handle scroll events for text content
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (!isValidUrl(content)) {
+    if (!url) {
       const element = e.currentTarget;
       const isAtBottom = Math.abs(
         element.scrollHeight - element.scrollTop - element.clientHeight
@@ -58,12 +85,16 @@ export const WebView = ({ content, onComplete }: WebViewProps) => {
 
   return (
     <div className="h-full flex flex-col">
-      {isValidUrl(content) ? (
+      {url ? (
         <div className="flex-1 relative w-full h-full min-h-[500px]">
           <iframe
-            src={content}
-            className="absolute inset-0 w-full h-full"
+            key={url} // Force iframe refresh when URL changes
+            src={url}
+            className="absolute inset-0 w-full h-full border-0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads allow-presentation"
+            referrerPolicy="no-referrer"
+            loading="lazy"
             allowFullScreen
           />
         </div>
@@ -72,7 +103,7 @@ export const WebView = ({ content, onComplete }: WebViewProps) => {
           className="flex-1 overflow-y-auto p-6 prose prose-emerald max-w-none"
           onScroll={handleScroll}
         >
-          <ReactMarkdown>{content}</ReactMarkdown>
+          <ReactMarkdown>{rawContent}</ReactMarkdown>
         </div>
       )}
       <div className="p-4 border-t flex justify-end">

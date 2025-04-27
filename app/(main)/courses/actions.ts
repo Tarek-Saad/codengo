@@ -45,14 +45,15 @@ async function fetchSubLOs(loId: number): Promise<SubLO[]> {
 const subLOTypeToChallenge: Record<string, ChallengeType> = {
   'introArticle': 'TEXT',
   'writeCode': 'SELECT',
-  'quiz': 'SELECT',
+  'quiz': 'TEXT', // Changed to TEXT to use WebView for forms
   'SBSVideo': 'VIDEO',
   'supportArticle': 'TEXT',
   'finalAssignment': 'PROJECT',
   'HowTo-video/PDF': 'PDF',
-  'exerciseTask': 'SELECT',
+  'exerciseTask': 'TEXT', // Changed to TEXT to use WebView
   'tutorial-video/PDF': 'PDF',
-  'interactiveDemo': 'SELECT',
+  'interactiveDemo': 'TEXT', // Changed to TEXT to use WebView
+  'summary': 'TEXT', // Added for quizizz and similar content
   'pdf': 'PDF'
 };
 
@@ -277,14 +278,17 @@ export async function createCourse(title: string, learningObjects: LearningObjec
           
           // Determine the challenge type based on the material content
           if (subLO.material) {
-            if (subLO.material.includes('youtube.com')) {
+            if (subLO.material.includes('youtube.com') || subLO.material.includes('youtu.be')) {
               challengeType = 'VIDEO';
+            } else if (subLO.reference && (subLO.reference.includes('youtube.com') || subLO.reference.includes('youtu.be'))) {
+              challengeType = 'VIDEO';
+              // Use reference as the video URL if it's a YouTube link
+              subLO.material = subLO.reference;
             } else if (subLO.material.includes('.pdf')) {
               challengeType = 'PDF';
-            } else if (subLO.material.includes('forms.gle') || subLO.material.includes('forms.google.com')) {
-              challengeType = 'SELECT';
             } else {
-              challengeType = 'TEXT'; // Default to TEXT for web content
+              // Use TEXT type for all web content to enable WebView
+              challengeType = 'TEXT';
             }
           } else {
             challengeType = subLOTypeToChallenge[subLO.name] || 'TEXT';
@@ -304,10 +308,12 @@ export async function createCourse(title: string, learningObjects: LearningObjec
 
           // Add specific fields based on challenge type
           let challengeData;
-          if (challengeType === 'VIDEO' && subLO.material?.includes('youtube.com')) {
+          if (challengeType === 'VIDEO') {
+            // Store video URL in videoURL field instead of webViewContent
             challengeData = {
               ...baseData,
               videoURL: subLO.material,
+              webViewContent: undefined, // Clear webViewContent for video challenges
             };
           } else if (challengeType === 'PDF' && subLO.material?.includes('.pdf')) {
             challengeData = {
@@ -321,11 +327,7 @@ export async function createCourse(title: string, learningObjects: LearningObjec
               language: 'javascript',
               testCases: '[]',
             };
-          } else if (challengeType === 'VIDEO') {
-            challengeData = {
-              ...baseData,
-              videoURL: subLO.material || undefined,
-            };
+          // Remove duplicate VIDEO case since it's handled above
           } else if (challengeType === 'PROJECT') {
             challengeData = {
               ...baseData,
