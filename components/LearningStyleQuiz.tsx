@@ -171,7 +171,7 @@ const LearningStyleQuiz = () => {
 
       try {
         const response = await axios.patch(
-          "http://localhost:3001/api/learner/learning-styles",
+          "https://graduation-learners-module-backend.vercel.app/api/learner/learning-styles",
           {
             email: userEmail,
             ...normalizedScores,
