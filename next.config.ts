@@ -1,6 +1,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https' as const,
+        hostname: 'img.clerk.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https' as const,
+        hostname: 'images.clerk.dev',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
   webpack: (config) => {
     config.resolve.alias.canvas = false;
     return config;

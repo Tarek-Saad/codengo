@@ -501,7 +501,7 @@ export const Challenge = ({
                     disabled={pending || !selectedOption}
                     status={status}
                     onCheck={onContinue}
-                    explanation={status === "correct" ? challenge.explanation : undefined}
+                    explanation={status === "correct" ? challenge.explanation ?? undefined : undefined}
                   />
                 </>
               )}
