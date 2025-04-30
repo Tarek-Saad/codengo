@@ -3,13 +3,20 @@ import { relations } from "drizzle-orm";
 import { integer } from "drizzle-orm/pg-core";
 
 export const courseTypeEnum = pgEnum("course_type", ["GLOBAL", "CUSTOMIZE"]);
+export const courseCategoryEnum = pgEnum("course_category", ["programming", "design", "data"]);
 
 export const courses = pgTable("courses", {
     id: serial("id").primaryKey(),
     title: text("title").notNull(),
-    imageSrc: text("image_src").notNull(),
+    description: text("description").notNull().default(""),
+    imageSrc: text("image_src").notNull().default(""),
     type: courseTypeEnum("type").notNull().default("GLOBAL"),
+    category: courseCategoryEnum("category").notNull().default("programming"),
+    demo: text("demo"),
     makerId: varchar("maker_id"),
+    assignedTo: text("assigned_to").array(),
+    price: integer("price").notNull().default(0),
+    xp: integer("xp").notNull().default(0),
 });
 
 
@@ -21,7 +28,7 @@ export const coursesRelations = relations(courses, ({ many }) => ({
   export const units = pgTable("units", {
     id: serial("id").primaryKey(),
     title: text("title").notNull(),
-    description: text("description").notNull(),
+    description: text("description").notNull().default(""),
     courseId: integer("course_id").references(() => courses.id, { onDelete: "cascade" }).notNull(),
     order: integer("order").notNull(),
   });

@@ -251,4 +251,47 @@ export const getLessonPercentage = cache(async () => {
   return percentage;
 });
 
+export const getGlobalCoursesAndCategories = cache(async () => {
+  const globalCourses = await db.query.courses.findMany({
+    where: eq(courses.type, "GLOBAL"),
+  });
+
+  // Extract unique categories from global courses
+  const categories = Array.from(new Set(globalCourses.map(course => course.category)));
+
+  return {
+    courses: globalCourses,
+    categories,
+  };
+});
+
+export const assignCoursesToUser = async (courseIds: number[]) => {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
+  // Get the courses to update
+  const coursesToUpdate = await db.query.courses.findMany({
+    where: or(
+      ...courseIds.map(id => eq(courses.id, id))
+    )
+  });
+
+  // Update each course's assignedTo array
+  for (const course of coursesToUpdate) {
+    const currentAssignedTo = course.assignedTo || [];
+    if (!currentAssignedTo.includes(userId)) {
+      await db.update(courses)
+        .set({
+          assignedTo: [...currentAssignedTo, userId]
+        })
+        .where(eq(courses.id, course.id));
+    }
+  }
+
+  return coursesToUpdate;
+};
+
 
