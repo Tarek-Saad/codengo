@@ -1,11 +1,15 @@
-import { boolean, pgEnum, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { boolean, pgEnum, pgTable, serial, text, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { integer } from "drizzle-orm/pg-core";
+
+export const courseTypeEnum = pgEnum("course_type", ["GLOBAL", "CUSTOMIZE"]);
 
 export const courses = pgTable("courses", {
     id: serial("id").primaryKey(),
     title: text("title").notNull(),
     imageSrc: text("image_src").notNull(),
+    type: courseTypeEnum("type").notNull().default("GLOBAL"),
+    makerId: varchar("maker_id"),
 });
 
 
@@ -16,8 +20,8 @@ export const coursesRelations = relations(courses, ({ many }) => ({
 
   export const units = pgTable("units", {
     id: serial("id").primaryKey(),
-    title: text("title").notNull(), // Unit 1
-    description: text("description").notNull(), // Learn the basics of Spanish
+    title: text("title").notNull(),
+    description: text("description").notNull(),
     courseId: integer("course_id").references(() => courses.id, { onDelete: "cascade" }).notNull(),
     order: integer("order").notNull(),
   });

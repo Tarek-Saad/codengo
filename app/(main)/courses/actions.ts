@@ -59,7 +59,7 @@ const subLOTypeToChallenge: Record<string, ChallengeType> = {
 
 type ChallengeType = 'SELECT' | 'ASSIST' | 'CODE' | 'VIDEO' | 'TEXT' | 'IMAGE' | 'PDF' | 'COMPLETE' | 'WRITE' | 'PROJECT';
 
-export async function createCourse(title: string, learningObjects: LearningObject[]) {
+export async function createCourse(title: string, learningObjects: LearningObject[], userId: string) {
   try {
     console.log('Creating course:', title);
     console.log('Learning objects:', learningObjects);
@@ -163,6 +163,8 @@ export async function createCourse(title: string, learningObjects: LearningObjec
     const [newCourse] = await db.insert(courses).values({
       title,
       imageSrc,
+      type: "CUSTOMIZE",
+      makerId: userId,
     }).returning();
 
     if (!newCourse) throw new Error("Failed to create course");

@@ -143,16 +143,29 @@ const LearningStyleQuiz = () => {
   }, []);
 
   const handleAnswer = async ({ dimension, value }: { dimension: string; value: number }) => {
-    // Update the scores with the current answer
-    const updatedScores = {
-      ...dimensionScores,
-      [dimension]: [...(dimensionScores[dimension] || []), value],
-    };
-    setDimensionScores(updatedScores);
+    try {
+      // Fix dimension name if it's in wrong order
+      const correctDimension = dimension === 'intuitive&sensing' ? 'sensing&intuitive' : dimension;
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-    } else {
+      // First, update the scores with the current answer
+      const updatedScores = {
+        ...dimensionScores,
+        [correctDimension]: [...(dimensionScores[correctDimension] || []), value],
+      };
+
+      // Wait for state update to complete
+      await new Promise<void>((resolve) => {
+        setDimensionScores(updatedScores);
+        resolve();
+      });
+
+      // If not the last question, just move to next
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion((prev) => prev + 1);
+        return;
+      }
+
+      // Handle last question
       if (!userId || !user?.emailAddresses?.[0]?.emailAddress) {
         toast.error("Please sign in with an email address to save your results");
         return;
@@ -161,43 +174,60 @@ const LearningStyleQuiz = () => {
       const userEmail = user.emailAddresses[0].emailAddress;
       const token = await getToken();
 
-      // Calculate average scores for each dimension using the updated scores
-      const normalizedScores = {
-        learning_style_active_reflective: Number(calculateAverageScore(updatedScores["active&reflective"]).toFixed(3)),
-        learning_style_visual_verbal: Number(calculateAverageScore(updatedScores["visual&verbal"]).toFixed(3)),
-        learning_style_sensing_intuitive: Number(calculateAverageScore(updatedScores["sensing&intuitive"]).toFixed(3)),
-        learning_style_sequential_global: Number(calculateAverageScore(updatedScores["sequential&global"]).toFixed(3)),
+      // Calculate final scores using the most recent scores
+      const finalScores = {
+        "active&reflective": updatedScores["active&reflective"] || [],
+        "visual&verbal": updatedScores["visual&verbal"] || [],
+        "sensing&intuitive": updatedScores["sensing&intuitive"] || [],
+        "sequential&global": updatedScores["sequential&global"] || [],
       };
 
-      try {
-        const response = await axios.patch(
-          "https://graduation-learners-module-backend.vercel.app/api/learner/learning-styles",
-          {
-            email: userEmail,
-            ...normalizedScores,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
+      // Debug logs
+      console.log('Updated scores:', updatedScores);
+      console.log('Final scores before calculation:', finalScores);
+      console.log('Last answer:', { dimension: correctDimension, value });
 
-        if (response.status === 200) {
-          toast.success("Learning style assessment completed!");
-          setFinalScores(normalizedScores);
-          setQuizCompleted(true);
-        } else {
-          throw new Error(`Unexpected response status: ${response.status}`);
+      // Calculate normalized scores
+      const normalizedScores = {
+        learning_style_active_reflective: Number(calculateAverageScore(finalScores["active&reflective"]).toFixed(3)),
+        learning_style_visual_verbal: Number(calculateAverageScore(finalScores["visual&verbal"]).toFixed(3)),
+        learning_style_sensing_intuitive: Number(calculateAverageScore(finalScores["sensing&intuitive"]).toFixed(3)),
+        learning_style_sequential_global: Number(calculateAverageScore(finalScores["sequential&global"]).toFixed(3)),
+      };
+
+      console.log('Calculated normalized scores:', normalizedScores);
+
+      // Save results to the server
+      const response = await axios.patch(
+        "https://graduation-learners-module-backend.vercel.app/api/learner/learning-styles",
+        {
+          email: userEmail,
+          learnerId: Number(userId),  // Convert Clerk userId to number
+          ...normalizedScores,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         }
-      } catch (error) {
-        console.error("Error saving results:", error);
-        if (axios.isAxiosError(error) && error.response) {
-          toast.error(`Failed to save results: ${error.response.data?.message || 'Unknown error'}`);
-        } else {
-          toast.error("Failed to save results. Please try again.");
-        }
+      );
+
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        toast.success("Learning style assessment completed!");
+        setFinalScores(normalizedScores);
+        setQuizCompleted(true);
+      } else {
+        throw new Error(`Unexpected response status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error in quiz:", error);
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(`Failed to save results: ${error.response.data?.message || 'Unknown error'}`);
+      } else {
+        toast.error("Failed to save results. Please try again.");
       }
     }
   };

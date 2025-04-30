@@ -1,8 +1,11 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+import LearningStyleQuiz from "@/components/LearningStyleQuiz";
 import { useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -26,12 +29,37 @@ export default function CustomizeCourse() {
   const [step, setStep] = useState<'input' | 'analyzing' | 'result' | 'generating'>('input');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
   const { user } = useUser();
+  const [hasLearningStyle, setHasLearningStyle] = useState<boolean | null>(null);
   const [userInput, setUserInput] = useState({
     user_knowledge: '',
     user_goal: ''
   });
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
+
+  useEffect(() => {
+    const checkLearningStyle = async () => {
+      if (!user?.emailAddresses?.[0]?.emailAddress) return;
+
+      try {
+        const response = await fetch(
+          `https://graduation-learners-module-backend.vercel.app/api/hasLS/${user.emailAddresses[0].emailAddress}`
+        );
+        const data = await response.json();
+        setHasLearningStyle(data.hasValue);
+        
+        if (!data.hasValue) {
+          setShowQuiz(true);
+        }
+      } catch (error) {
+        console.error('Error checking learning style:', error);
+        setError('Failed to check learning style status');
+      }
+    };
+
+    checkLearningStyle();
+  }, [user?.emailAddresses]);
 
   const handleAnalyze = async () => {
     try {
@@ -167,35 +195,67 @@ export default function CustomizeCourse() {
                     throw new Error('Please sign in with an email address');
                   }
 
+                  // Ensure all required fields are present and valid
+                  if (!analysisResult?.learning_goal?.[0]?.trim()) {
+                    throw new Error('Learning goal is required');
+                  }
+
+                  // Create a Set to remove duplicates and filter out empty strings
+                  const knowledgeBase = new Set(
+                    [
+                      ...(analysisResult.knowledge_base?.filter(item => item.trim()) || []),
+                      'Introduction to Programming'
+                    ].filter(Boolean)
+                  );
+
                   const requestPayload = {
                     learner_email: user.emailAddresses[0].emailAddress,
                     learning_goals: [analysisResult.learning_goal[0]],
-                    // If no knowledge base, use a default one
-                    knowledge_base: analysisResult.knowledge_base?.length ? 
-                      analysisResult.knowledge_base : 
-                      ['Introduction to Programming']
+                    knowledge_base: Array.from(knowledgeBase)
                   };
+
+                  // Validate the payload
+                  if (!requestPayload.learning_goals[0]?.trim()) {
+                    throw new Error('Invalid learning goal');
+                  }
+                  if (requestPayload.knowledge_base.length === 0) {
+                    throw new Error('Knowledge base cannot be empty');
+                  }
 
                   setStep('generating');
                   setIsLoading(true);
 
                   try {
-                    const response = await fetch('https://iia-one.vercel.app/api/selection/best-path', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(requestPayload)
-                  });
+                    console.log('Sending request payload:', JSON.stringify(requestPayload, null, 2));
+                    
+                    // Sanitize the payload before sending
+const sanitizedPayload = {
+  ...requestPayload,
+  learning_goals: requestPayload.learning_goals.map(goal => goal.trim()),
+  knowledge_base: requestPayload.knowledge_base.map(item => item.trim())
+};
 
-                  if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error:', response.status, errorText);
-                    throw new Error(`Failed to get best path: ${response.status} ${errorText}`);
-                  }
+console.log('Sanitized request payload:', JSON.stringify(sanitizedPayload, null, 2));
 
-                    const pathData = await response.json();
+const response = await fetch('https://iia-one.vercel.app/api/selection/best-path', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                      },
+                      body: JSON.stringify(sanitizedPayload)
+                    });
+
+                    // Log the raw response for debugging
+                    const responseText = await response.text();
+                    console.log('Raw API response:', responseText);
+
+                    if (!response.ok) {
+                      throw new Error(`API Error (${response.status}): ${responseText}`);
+                    }
+
+                    // Parse the response text as JSON
+                    const pathData = JSON.parse(responseText);
                     console.log('Best Path Result:', pathData);
                     
                     // Map the learning object types to our challenge types
@@ -232,7 +292,11 @@ export default function CustomizeCourse() {
                     const courseTitle = mappedObjects[mappedObjects.length - 1]?.name || 'New Course';
                     
                     // Create the course with unit and lessons
-                    const result = await createCourse(courseTitle, mappedObjects);
+                    if (!user?.id) {
+                      throw new Error('User ID not found');
+                    }
+
+                    const result = await createCourse(courseTitle, mappedObjects, user.id);
                     
                     if (!result?.course) {
                       throw new Error('Failed to create course');
@@ -265,6 +329,23 @@ export default function CustomizeCourse() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-16 relative">
+      <Dialog open={showQuiz} onOpenChange={setShowQuiz}>
+        <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Complete the Learning Style Assessment</DialogTitle>
+            <p className="text-gray-500 mt-2">Please complete this quick assessment to help us personalize your learning experience.</p>
+            <Button 
+              variant="ghost" 
+              className="absolute right-4 top-4" 
+              onClick={() => setShowQuiz(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <LearningStyleQuiz />
+        </DialogContent>
+      </Dialog>
+
       {isLoading && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col items-center gap-4">
@@ -273,9 +354,15 @@ export default function CustomizeCourse() {
           </div>
         </div>
       )}
+
       <div className="bg-green-400 rounded-3xl p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">Les customize your learning path!</h1>
-        <p className="text-green-50 mb-8">Tell us what you know & where you wanna go</p>
+        <h1 className="text-3xl font-bold mb-2">Let&apos;s customize your learning path!</h1>
+        <p className="text-green-50 mb-8">
+          {hasLearningStyle === false ? 
+            'First, complete the learning style assessment to help us personalize your experience' :
+            'Tell us what you know & where you want to go'
+          }
+        </p>
 
         <div className="space-y-6">
           <div>
@@ -302,9 +389,15 @@ export default function CustomizeCourse() {
           </div>
 
           <Button
-            onClick={handleAnalyze}
+            onClick={async () => {
+              if (!hasLearningStyle) {
+                setShowQuiz(true);
+                return;
+              }
+              await handleAnalyze();
+            }}
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!userInput.user_goal.trim()}
+            disabled={!userInput.user_goal.trim() || hasLearningStyle === null}
           >
             ANALYZE!
           </Button>

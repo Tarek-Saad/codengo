@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { challengeProgress, courses, lessons, units, userProgress } from "./schema";
 import db from "./drizzle";
 
-import { eq } from "drizzle-orm";
+import { eq, or, and } from "drizzle-orm";
 
 export const getUserProgress = cache(async () => {
   const { userId } = await auth();
@@ -24,8 +24,27 @@ export const getUserProgress = cache(async () => {
 });
 
 export const getCourses = cache(async () => {
-  const courses = await db.query.courses.findMany();
-  return courses;
+  const { userId } = await auth();
+
+  if (!userId) {
+    // If no user is logged in, only show global courses
+    return await db.query.courses.findMany({
+      where: eq(courses.type, "GLOBAL")
+    });
+  }
+
+  // If user is logged in, show global courses and their custom courses
+  const userCourses = await db.query.courses.findMany({
+    where: or(
+      eq(courses.type, "GLOBAL"),
+      and(
+        eq(courses.type, "CUSTOMIZE"),
+        eq(courses.makerId, userId)
+      )
+    )
+  });
+
+  return userCourses;
 });
 
 export const getCourseById = cache(async (courseId: number) => {
@@ -90,6 +109,28 @@ export const getUnits = cache(async () => {
 
   return normalizedData;
 });
+
+export const updateUserProgress = async (data: Partial<typeof userProgress.$inferInsert>) => {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return false;
+  }
+
+  const existingProgress = await db.query.userProgress.findFirst({
+    where: eq(userProgress.userId, userId),
+  });
+
+  if (!existingProgress) {
+    return false;
+  }
+
+  await db.update(userProgress)
+    .set(data)
+    .where(eq(userProgress.userId, userId));
+
+  return true;
+};
 
 export const getCourseProgress = cache(async () => {
   const { userId } = await auth();

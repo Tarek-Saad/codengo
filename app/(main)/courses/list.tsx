@@ -43,6 +43,8 @@ export default function List({ courses, activeCourseId }: props) {
                     active={activeCourseId ? course.id === activeCourseId : false}
                     onClick={onClick}
                     disabled={pending}
+                    type={course.type}
+                    makerId={course.makerId}
                 />
             ))}
         </div>

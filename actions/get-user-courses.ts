@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import db from "@/db/drizzle";
 import { userProgress } from "@/db/schema";
 
@@ -44,8 +44,14 @@ export const getUserCourses = async () => {
     };
   }
 
-  // Get all courses and their progress
+  // Get courses that are either global or created by the user
   const allCourses = await db.query.courses.findMany({
+    where: (courses) => {
+      return or(
+        eq(courses.type, "GLOBAL"),
+        eq(courses.makerId, userId)
+      );
+    },
     with: {
       units: {
         with: {

@@ -9,6 +9,8 @@ type props = {
   active: boolean;
   onClick: (id: number) => void;
   disabled: boolean;
+  type: "GLOBAL" | "CUSTOMIZE";
+  makerId?: string | null;
 };
 
 export default function Card({
@@ -18,6 +20,7 @@ export default function Card({
   active,
   onClick,
   disabled,
+  type,
 }: props) {
   return (
     <div
@@ -44,9 +47,17 @@ export default function Card({
   width={93.33}
   className="rounded-lg drop-shadow-md border object-cover"
 />
-<p className="text-neutral-700 text-center font-bold mt-3">
-  {title}
-</p>
+<div className="text-center mt-3">
+  <p className="text-neutral-700 font-bold">{title}</p>
+  <div className="flex items-center justify-center gap-2 mt-1">
+    <span className={cn(
+      "text-xs px-2 py-0.5 rounded",
+      type === "GLOBAL" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"
+    )}>
+      {type === "GLOBAL" ? "Global" : "Custom"}
+    </span>
+  </div>
+</div>
 
     </div>
   );
